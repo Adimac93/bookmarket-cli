@@ -2,12 +2,14 @@
     "compilerOptions": {
         "target": "es6",
         "module": "commonjs",
+        "isolatedModules": true,
         "declaration": true,
         "sourceMap": true,
         "outDir": "dist",
         "rootDir": "./",
         "strict": true,
         "esModuleInterop": true,
-        "resolveJsonModule": true
+        "resolveJsonModule": true,
+        "moduleResolution": "node"
     }
 }
