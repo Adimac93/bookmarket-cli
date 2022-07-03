@@ -1,10 +1,12 @@
 import * as cheerio from "cheerio";
-import { gradeConvert, subjectConvert, Book } from "./common";
-
+import { gradeConvert, subjectConvert } from "./common";
+import { Book, Grade, Subject } from "@prisma/client";
+import fetch from "node-fetch";
 const decoder = new TextDecoder("iso-8859-2");
 
-export async function getBook(urlSuffix: string): Promise<Book> {
-    const response = await fetch(`https://www.taniaksiazka.pl${urlSuffix}`);
+export async function fetchBook(url: string): Promise<Book> {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Cannot fetch book from ${url}`);
 
     const buffer = await response.arrayBuffer();
 
@@ -14,32 +16,33 @@ export async function getBook(urlSuffix: string): Promise<Book> {
 
     const imageInfo = getCoverInfo($("div .col-left4 .full-col img").attr("src") || "");
 
-    const cover = imageInfo?.path || "";
-    const isbn = imageInfo?.isbn || "";
+    const image = imageInfo?.path || "";
+    const id = imageInfo?.isbn || "";
 
     const authors: Array<string> = [];
     $("div .author h2").each((i, author) => {
         authors.push($(author).text().trim().replace("  ", " "));
     });
+    const author = authors.join(", ");
 
     const path = $("div #path").text().trim().toLowerCase().replace("\t", "").split("\n").slice(-3);
 
     const details = getDetails($("div .product-info span").text());
-    let grade;
+    let grade: Grade = undefined!;
     if (!details?.grade) {
         const match = /klasa\s(\d)/i.exec(path[0]);
-        grade = gradeConvert[(match ? match[1] : "1") as keyof typeof gradeConvert];
+        if (match) grade = gradeConvert[match[1] as keyof typeof gradeConvert] as Grade;
     } else {
-        grade = gradeConvert[details.grade as keyof typeof gradeConvert];
+        grade = gradeConvert[details.grade as keyof typeof gradeConvert] as Grade;
     }
     const title = details?.title || "";
-    const isAdvanced = details?.isAdvanced || false;
-    const subject: string = subjectConvert[path[1] as keyof typeof subjectConvert];
+    const is_advanced = details?.isAdvanced || false;
+    const subject = subjectConvert[path[1] as keyof typeof subjectConvert] as Subject;
 
     const price = parseInt($(".our-price strong #updateable_price-zl").text());
     // const description = $("#opis").text();
 
-    return { title, authors, grade, subject, isAdvanced, cover, isbn, price };
+    return { title, author, grade, subject, is_advanced, image, id, price };
 }
 
 function getCoverInfo(data: string) {

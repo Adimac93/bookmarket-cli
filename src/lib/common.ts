@@ -21,33 +21,6 @@ export const subjectConvert = {
     przedsiębiorczość: "ENTREPRENEURSHIP",
 };
 
-export const subjects = [
-    "math",
-    "english",
-    "polish",
-    "german",
-    "russian",
-    "history",
-    "civics",
-    "chemistry",
-    "biology",
-    "geography",
-    "physics",
-    "computer_science",
-    "entrepreneurship",
-];
-
-export interface Book {
-    title: string;
-    authors: string[];
-    grade: string;
-    subject: string;
-    cover: string;
-    isbn: string;
-    isAdvanced: boolean;
-    price: number;
-}
-
 export const testUrlSet = [
     "https://www.taniaksiazka.pl/oblicza-geografii-2-zakres-podstawowy-podrecznik-dla-liceum-ogolnoksztalcacego-i-technikum-szkoly-ponadpodstawowe-krzysztof-wiedermann-p-1386257.html",
     "https://www.taniaksiazka.pl/matematyka-2-podrecznik-do-liceow-i-technikow-zakres-rozszerzony-elzbieta-kurczab-p-1421535.html",
@@ -63,3 +36,11 @@ export const testUrlSet = [
     "https://www.taniaksiazka.pl/kak-raz-klasa-2-jezyk-rosyjski-zeszyt-cwiczen-szkola-ponadpodstawowa-liceum-i-technikum-olga-tatarchyk-p-1386597.html",
     "https://www.taniaksiazka.pl/krok-w-przedsiebiorczosc-podrecznik-do-podstaw-przedsiebiorczosci-dla-szkol-ponadpodstawowych-tomasz-rachwal-p-1386260.html",
 ];
+
+export const increment = <K>(map: Map<K, number>, key: K) => {
+    if (map.has(key)) {
+        map.set(key, map.get(key)! + 1);
+    } else {
+        map.set(key, 1);
+    }
+};
