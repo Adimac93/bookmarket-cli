@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Book {
+  id                String              @id
+  title             String
+  author            String
+  price             Int
+  image             String
+  grade             Grade
+  subject           Subject
+  is_advanced       Boolean
+  BookWithCondition BookWithCondition[]
+}
+
+model BookCopy {
+  id                String            @id
+  owner_id          String
+  status            String
+  book_id           String
+  condition         Condition
+  BookWithCondition BookWithCondition @relation(fields: [book_id, condition], references: [book_id, condition])
+  User              User              @relation(fields: [owner_id], references: [id])
+}
+
+model BookInCart {
+  user_id           String
+  book_id           String
+  condition         Condition
+  BookWithCondition BookWithCondition @relation(fields: [book_id, condition], references: [book_id, condition])
+  User              User              @relation(fields: [user_id], references: [id])
+
+  @@unique([book_id, user_id])
+}
+
+model BookWithCondition {
+  book_id    String
+  condition  Condition
+  Book       Book         @relation(fields: [book_id], references: [id])
+  BookCopy   BookCopy[]
+  BookInCart BookInCart[]
+
+  @@id([book_id, condition])
+}
+
+model User {
+  id           String       @id
+  name         String
+  phone_number String?      @unique
+  discord_id   String?      @unique
+  google_id    String?      @unique
+  facebook_id  String?      @unique
+  BookCopy     BookCopy[]
+  BookInCart   BookInCart[]
+}
+
+enum Condition {
+  NEW
+  GOOD
+  DAMAGED
+  BAD
+}
+
+enum Grade {
+  FIRST
+  SECOND
+  THIRD
+  FOURTH
+}
+
+enum Subject {
+  MATH
+  ENGLISH
+  POLISH
+  GERMAN
+  RUSSIAN
+  HISTORY
+  CIVICS
+  CHEMISTRY
+  BIOLOGY
+  GEOGRAPHY
+  PHYSICS
+  COMPUTER_SCIENCE
+  ENTREPRENEURSHIP
+}
