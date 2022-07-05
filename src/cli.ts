@@ -6,35 +6,43 @@ import { Book, Grade, Subject } from "@prisma/client";
 import { uploadBook } from "./lib/database";
 import { prompt, registerPrompt } from "inquirer";
 registerPrompt("search-list", require("inquirer-search-list"));
-const fileName = "./data.json";
+import schema from './../schema.json'
+import books from './../books.json'
 
 const booksMap = new Map<string, number>();
 Object.entries(Subject).map(([k, subject]) => {
     booksMap.set(subject, 0);
 });
 async function main() {
-    const data = await loadFile();
 
+	const options = await prompt({
+		name:"menu",
+		message:"Choose menu",
+		choices:[{name:"schema editor",value:'schema',}]
+	})
+    await promptSchemaEditor()
     const books = await promptAddBooks();
 
     //await fs.writeFile(fileName, JSON.stringify(books, null, 4), "utf-8");
 }
-const loadFile = async () => {
-    const file = await fs.readFile(fileName, { flag: "a+", encoding: "utf-8" });
+const loadFile = async (path: string) => {
+    const file = await fs.readFile(path, { flag: "a+", encoding: "utf-8" });
     let data = {};
 
     try {
         data = JSON.parse(file);
-        //console.log(data);
     } catch (err) {
-        console.error(`Failed to parse "${fileName}"`);
+        console.error(`Failed to parse "${path}"`);
         if (await confirm("Clear?")) {
-            await fs.writeFile(fileName, "{}", "utf-8");
+            await fs.writeFile(path, "{}", "utf-8");
         }
     } finally {
         return data;
     }
 };
+const saveFile = async (path: string, payload: any) => {
+    await fs.writeFile(path, JSON.stringify(payload, null, 4), 'utf-8')
+}
 async function promptAddBooks() {
     const books: Book[] = [];
     let isNext = true;
@@ -48,6 +56,7 @@ async function promptAddBooks() {
         });
         const book = await getBook(options.url);
         if (!book) return books;
+        console.log(book);
 
         const fill = await prompt([
             {
@@ -69,7 +78,7 @@ async function promptAddBooks() {
                 },
             },
             {
-                name: "authors",
+                name: "author",
                 message: "Authors",
                 default: book.author || "brak autora",
                 type: "input",
@@ -123,46 +132,18 @@ async function promptAddBooks() {
                 message: "Is advanced",
                 type: "confirm",
                 when: (fill) => {
-                    if (book.is_advanced == undefined && fill.mode != "edit") {
+                    if (book.is_advanced != undefined && fill.mode != "edit") {
                         return false;
                     }
                     return true;
                 },
             },
-            // {
-            //     name: "image",
-            //     message: "Image",
-            //     type: "input",
-            //     default: book.image,
-            // },
-            // {
-            //     name: "id",
-            //     message: "ISBN",
-            //     type: "input",
-            //     default: book.id,
-            // },
-            // {
-            //     name: "price",
-            //     message: "Price",
-            //     type: "number",
-            //     default: book.price,
-            // },
         ]);
-        if (fill.title) {
-            book.title = fill.title;
-        }
-        if (fill.authors) {
-            book.author = fill.authors;
-        }
-        if (fill.grade) {
-            book.grade = fill.grade;
-        }
-        if (fill.subject) {
-            book.subject = fill.subject;
-        }
-        if (fill.is_advanced) {
-            book.is_advanced = fill.is_advanced;
-        }
+
+        Object.entries(fill).map(([k, v]) => {
+            const filed = book[k as keyof typeof book];
+            (book[k as keyof typeof book] as typeof filed) = v as typeof filed
+        })
         console.log(book);
         isNext = false;
     }
@@ -176,3 +157,18 @@ const getBook = async (url: string) => {
         console.log((err as Error).message);
     }
 };
+async function promptSchemaEditor(){
+    const options = await prompt([{
+        name: "grade",
+        message: "Choose grade",
+        type: "list",
+        choices: Object.entries(Grade).map(([key, value]) => ({ value })),
+    }, {
+        name: "subjects",
+        message: "Choose subjects",
+        type: 'checkbox',
+        choices: (options) => Object.entries(Subject).map(([key, value]) => ({  value, checked: (schema[options.grade as keyof typeof schema] as Subject[]).includes(value as Subject) })),
+    }])
+    schema[options.grade as keyof typeof schema] = options.subjects
+    await saveFile('./schema.json', schema)
+}
