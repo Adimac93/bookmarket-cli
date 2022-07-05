@@ -5,7 +5,7 @@ import fetch from "node-fetch";
 const decoder = new TextDecoder("iso-8859-2");
 
 export async function fetchBook(url: string): Promise<Book> {
-    const response = await fetch(url);
+    const response = await fetch(url).catch((err)=> {throw new Error("Check your internet connection")});
     if (!response.ok) throw new Error(`Cannot fetch book from ${url}`);
 
     const buffer = await response.arrayBuffer();
