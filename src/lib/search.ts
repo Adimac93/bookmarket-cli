@@ -3,6 +3,7 @@ import fetch from 'node-fetch';
 import * as cheerio from 'cheerio';
 import { fetchBook } from './loader';
 import { createSpinner } from 'nanospinner';
+import { Book } from '@prisma/client';
 const decoder = new TextDecoder('iso-8859-2');
 
 export async function promptSearchBooks() {
@@ -21,11 +22,12 @@ export async function promptSearchBooks() {
 		type: 'checkbox',
 		choices,
 	});
-	if (search.books) {
+	if (!search.books) return;
+	return Promise.all<Book>(
 		search.books.map(async (url: string) => {
-			console.log(await fetchBook(`https://www.taniaksiazka.pl/${url}`));
-		});
-	}
+			return await fetchBook(`https://www.taniaksiazka.pl/${url}`);
+		}),
+	);
 }
 
 const gradeFilters = [13916, 13917, 13933, 13948];
