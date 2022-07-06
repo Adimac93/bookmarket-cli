@@ -27,6 +27,7 @@
         "cheerio": "^1.0.0-rc.11",
         "inquirer": "^8.0.0",
         "inquirer-search-list": "^1.2.6",
+        "nanospinner": "^1.1.0",
         "node-fetch": "^2.6.7"
     }
 }
