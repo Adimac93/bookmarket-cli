@@ -31,7 +31,9 @@ async function main() {
 	} else if (options.menu == 'books') {
 		await promptFetchBook();
 	} else if (options.menu == 'search') {
-		await promptSearchBooks();
+		const books = await promptSearchBooks();
+		if (!books) return;
+		console.log(await promptEditBooks(books));
 	}
 }
 
@@ -195,4 +197,10 @@ async function promptEditBook(book: Book) {
 	return book;
 }
 
+async function promptEditBooks(books: Book[]) {
+	for (let book of books) {
+		book = await promptEditBook(book);
+	}
+	return books;
+}
 main();
