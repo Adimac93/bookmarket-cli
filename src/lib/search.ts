@@ -2,6 +2,7 @@ import { prompt } from 'inquirer';
 import fetch from 'node-fetch';
 import * as cheerio from 'cheerio';
 import { fetchBook } from './loader';
+import { createSpinner } from 'nanospinner';
 const decoder = new TextDecoder('iso-8859-2');
 
 export async function promptSearchBooks() {
@@ -12,6 +13,7 @@ export async function promptSearchBooks() {
 	});
 
 	const choices = await fetchSearchResults(options.query);
+	if (!choices) return;
 
 	const search = await prompt({
 		name: 'books',
@@ -19,10 +21,11 @@ export async function promptSearchBooks() {
 		type: 'checkbox',
 		choices,
 	});
-
-	search.books.map(async (url: string) => {
-		console.log(await fetchBook(`https://www.taniaksiazka.pl/${url}`));
-	});
+	if (search.books) {
+		search.books.map(async (url: string) => {
+			console.log(await fetchBook(`https://www.taniaksiazka.pl/${url}`));
+		});
+	}
 }
 
 const gradeFilters = [13916, 13917, 13933, 13948];
@@ -35,23 +38,44 @@ async function fetchSearchResults(query: string) {
 	} else {
 		filter = gradeFilters[0];
 	}
-
-	const response = await fetch(
-		`https://www.taniaksiazka.pl/Szukaj/q-${query
-			.split(' ')
-			.join('+')}?params[c]=${filter}&params[f]=no,p&params[last]=f`,
-	);
-	const buffer = await response.arrayBuffer();
-
-	const text = decoder.decode(buffer);
-
-	const $ = cheerio.load(text);
-
+	const spinner = createSpinner('Fetching results...').start();
 	const choices: { name: string; value: string }[] = [];
-	$('.product-main h2 a').each((i, el) => {
-		const url = el.attribs['href'];
-		const title = el.attribs['data-name'];
-		choices.push({ name: title, value: url });
-	});
+
+	let pageNumber = 1;
+	let isNext = true;
+	while (isNext) {
+		spinner.update({ text: `Fetching page ${pageNumber}` });
+		const response = await fetch(
+			`https://www.taniaksiazka.pl/Szukaj/q-${query
+				.split(' ')
+				.join(
+					'+',
+				)}/page-${pageNumber}?params[c]=${filter}&params[f]=no,p&params[last]=f`,
+		).catch((err) => {
+			spinner.error({ text: 'Bad connection' });
+			throw new Error('Check your internet connection');
+		});
+
+		const buffer = await response.arrayBuffer();
+
+		const text = decoder.decode(buffer);
+
+		const $ = cheerio.load(text);
+
+		const products = $('.product-main h2 a');
+		if (products.length == 0) {
+			spinner.warn({ text: 'No results', mark: '📖' });
+			return;
+		}
+		products.each((i, el) => {
+			const url = el.attribs['href'];
+			const title = el.attribs['data-name'];
+			choices.push({ name: title, value: url });
+		});
+
+		pageNumber++;
+		isNext = $('.page-index .next').length ? true : false;
+	}
+	spinner.success({ text: 'Fetched all books', mark: '📚' });
 	return choices;
 }
