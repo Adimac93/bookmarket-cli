@@ -138,9 +138,10 @@ async function promptEditBook(book: Book) {
 				return authors
 					.split(',')
 					.map((author) => {
-						const match = /([\w-]+\s?)+/giu.exec(author.trim());
+						const match = author.trim().match(/(\S+)+/giu);
 						if (match) {
-							return match[0];
+							console.log(match);
+							return match.join(' ');
 						}
 						return author.trim();
 					})
@@ -185,7 +186,7 @@ async function promptEditBook(book: Book) {
 			},
 		},
 	]);
-
+	delete fill.mode;
 	Object.entries(fill).map(([k, v]) => {
 		const filed = book[k as keyof typeof book];
 		(book[k as keyof typeof book] as typeof filed) = v as typeof filed;
