@@ -4,12 +4,15 @@ import * as cheerio from 'cheerio';
 import { fetchBook } from './loader';
 import { createSpinner } from 'nanospinner';
 import { Book } from '@prisma/client';
-const decoder = new TextDecoder('iso-8859-2');
+import { promptEditBooks } from './editor';
+import { saveFile } from './common';
 
 import books from '../../books.json';
 const registeredBooks = books.map((book) => {
 	return book.id;
 });
+
+const decoder = new TextDecoder('iso-8859-2');
 
 export async function promptSearchBooks() {
 	const options = await prompt({
@@ -28,11 +31,17 @@ export async function promptSearchBooks() {
 		choices,
 	});
 	if (!search.books) return;
-	return Promise.all<Book>(
+
+	const fetchedBooks = await Promise.all<Book>(
 		search.books.map(async (url: string) => {
 			return await fetchBook(`https://www.taniaksiazka.pl/${url}`);
 		}),
 	);
+
+	if (!fetchedBooks) return;
+
+	const editedBooks = await promptEditBooks(fetchedBooks);
+	saveFile('./books.json', editedBooks);
 }
 
 const gradeFilters = [13916, 13917, 13933, 13948];
@@ -98,4 +107,27 @@ async function fetchSearchResults(query: string) {
 	}
 	spinner.success({ text: 'Fetched all books', mark: '📚' });
 	return choices;
+}
+
+export async function promptFetchBook() {
+	const options = await prompt({
+		name: 'url',
+		message: 'Url',
+		type: 'input',
+
+		filter: (url) => {
+			const match = /(https:\/{2}w{3}.taniaksiazka.pl\/.*\.html)/i.exec(url);
+			if (match) return match[1];
+			return url;
+		},
+		validate: (url) =>
+			/(https:\/{2}w{3}.taniaksiazka.pl\/.*\.html)/i.test(url) || 'Invlaid url',
+	});
+
+	try {
+		return await fetchBook(options.url);
+	} catch (err) {
+		console.log((err as Error).message);
+		return;
+	}
 }

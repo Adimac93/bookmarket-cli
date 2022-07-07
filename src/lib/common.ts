@@ -1,3 +1,5 @@
+import * as fs from 'node:fs/promises';
+
 export const gradeConvert = {
 	'1': 'FIRST',
 	'2': 'SECOND',
@@ -37,10 +39,6 @@ export const testUrlSet = [
 	'https://www.taniaksiazka.pl/krok-w-przedsiebiorczosc-podrecznik-do-podstaw-przedsiebiorczosci-dla-szkol-ponadpodstawowych-tomasz-rachwal-p-1386260.html',
 ];
 
-export const increment = <K>(map: Map<K, number>, key: K) => {
-	if (map.has(key)) {
-		map.set(key, map.get(key)! + 1);
-	} else {
-		map.set(key, 1);
-	}
+export const saveFile = async (path: string, payload: any) => {
+	await fs.writeFile(path, JSON.stringify(payload, null, 4), 'utf-8');
 };

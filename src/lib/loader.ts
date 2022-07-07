@@ -2,6 +2,7 @@ import * as cheerio from 'cheerio';
 import { gradeConvert, subjectConvert } from './common';
 import { Book, Grade, Subject } from '@prisma/client';
 import fetch from 'node-fetch';
+
 const decoder = new TextDecoder('iso-8859-2');
 
 export async function fetchBook(url: string): Promise<Book> {
