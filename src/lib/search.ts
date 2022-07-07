@@ -1,10 +1,15 @@
-import { prompt } from 'inquirer';
+import { prompt, ChoiceCollection } from 'inquirer';
 import fetch from 'node-fetch';
 import * as cheerio from 'cheerio';
 import { fetchBook } from './loader';
 import { createSpinner } from 'nanospinner';
 import { Book } from '@prisma/client';
 const decoder = new TextDecoder('iso-8859-2');
+
+import books from '../../books.json';
+const registeredBooks = books.map((book) => {
+	return book.id;
+});
 
 export async function promptSearchBooks() {
 	const options = await prompt({
@@ -41,7 +46,7 @@ async function fetchSearchResults(query: string) {
 		filter = gradeFilters[0];
 	}
 	const spinner = createSpinner('Fetching results...').start();
-	const choices: { name: string; value: string }[] = [];
+	const choices: ChoiceCollection = [];
 
 	let pageNumber = 1;
 	let isNext = true;
@@ -64,15 +69,28 @@ async function fetchSearchResults(query: string) {
 
 		const $ = cheerio.load(text);
 
-		const products = $('.product-main h2 a');
-		if (products.length == 0) {
-			spinner.warn({ text: 'No results', mark: '📖' });
-			return;
-		}
+		const products = $('.product-container');
 		products.each((i, el) => {
-			const url = el.attribs['href'];
-			const title = el.attribs['data-name'];
-			choices.push({ name: title, value: url });
+			const data = $(el).find('.product-image a');
+
+			const title = data.attr('data-name')!;
+			const url = data.attr('href')!;
+			const image = data.find('img').attr('data-src');
+
+			if (title && url && image) {
+				const match = /(?<path>\/\w+\/(?<isbn>\d+)\..*)/.exec(image);
+				if (match) {
+					const isbn = match.groups!.isbn;
+
+					choices.push({
+						name: title,
+						value: url,
+						disabled: registeredBooks.includes(isbn),
+					});
+				}
+			}
+
+			console.log(title, url, image);
 		});
 
 		pageNumber++;

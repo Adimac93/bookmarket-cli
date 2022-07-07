@@ -33,7 +33,8 @@ async function main() {
 	} else if (options.menu == 'search') {
 		const books = await promptSearchBooks();
 		if (!books) return;
-		console.log(await promptEditBooks(books));
+		const editedBooks = await promptEditBooks(books);
+		saveFile('./books.json', editedBooks);
 	}
 }
 
@@ -199,6 +200,7 @@ async function promptEditBook(book: Book) {
 
 async function promptEditBooks(books: Book[]) {
 	for (let book of books) {
+		console.log(book);
 		book = await promptEditBook(book);
 	}
 	return books;
