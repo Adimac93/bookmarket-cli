@@ -32,15 +32,28 @@ export async function promptSearchBooks() {
 	});
 	if (!search.books) return;
 
+	const spinner = createSpinner('Fetching books').start();
+
+	let currentFetchNumber = 1;
+	const maxFetchNumber = search.books.length;
+
 	const fetchedBooks = await Promise.all<Book>(
 		search.books.map(async (url: string) => {
+			spinner.update({
+				text: `Fetching ${currentFetchNumber} / ${maxFetchNumber}`,
+			});
+			currentFetchNumber++;
 			return await fetchBook(`https://www.taniaksiazka.pl/${url}`);
 		}),
 	);
-
-	if (!fetchedBooks) return;
+	if (!fetchedBooks) {
+		spinner.error({ text: "Couldn't fetch data", mark: '📖' });
+		return;
+	}
+	spinner.success({ text: 'Fetched all data', mark: '🚀' });
 
 	const editedBooks = await promptEditBooks(fetchedBooks);
+
 	saveFile('./books.json', editedBooks);
 }
 
@@ -104,6 +117,11 @@ async function fetchSearchResults(query: string) {
 
 		pageNumber++;
 		isNext = $('.page-index .next').length ? true : false;
+	}
+
+	if (choices.length == 0) {
+		spinner.error({ text: `Couldn't find any books` });
+		return;
 	}
 	spinner.success({ text: 'Fetched all books', mark: '📚' });
 	return choices;
