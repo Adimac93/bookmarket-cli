@@ -75,11 +75,9 @@ async function fetchSearchResults(query: string) {
 	while (isNext) {
 		spinner.update({ text: `Fetching page ${pageNumber}` });
 		const response = await fetch(
-			`https://www.taniaksiazka.pl/Szukaj/q-${query
-				.split(' ')
-				.join(
-					'+',
-				)}/page-${pageNumber}?params[c]=${filter}&params[f]=no,p&params[last]=f`,
+			`https://www.taniaksiazka.pl/Szukaj/q-${query.split(' ').join('+')}${
+				pageNumber == 1 ? '' : `/page-${pageNumber}`
+			}?params[c]=${filter}&params[f]=no,p&params[last]=f`,
 		).catch((err) => {
 			spinner.error({ text: 'Bad connection' });
 			throw new Error('Check your internet connection');
