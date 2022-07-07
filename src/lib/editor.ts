@@ -7,29 +7,26 @@ registerPrompt('search-list', require('inquirer-search-list'));
 import schema from './../../schema.json';
 
 export async function promptEditBook(book: Book) {
-	const isFilled = Object.values(book).every(
-		(x) => x != undefined || x != false,
-	);
-	let modes;
-	if (isFilled) {
-		modes = ['accept', 'edit'];
+	console.log(book);
+	const editedBook = await editBook(book);
+	if (book == editedBook) {
+		console.log('Nothing changed');
 	} else {
-		modes = ['guided-edit', 'edit'];
+		console.log(editedBook);
+		console.log('---');
 	}
+	return editedBook;
+}
+
+async function editBook(book: Book): Promise<Book> {
 	const fill = await prompt([
-		{
-			name: 'mode',
-			message: 'Mode',
-			type: 'list',
-			choices: modes,
-		},
 		{
 			name: 'title',
 			message: 'Title',
 			default: book.title || 'brak tytułu',
 			type: 'input',
 			when: (fill) => {
-				if (book.title && fill.mode != 'edit') {
+				if (book.title) {
 					return false;
 				}
 				return true;
@@ -41,7 +38,7 @@ export async function promptEditBook(book: Book) {
 			default: book.author || 'brak autora',
 			type: 'input',
 			when: (fill) => {
-				if (book.author && fill.mode != 'edit') {
+				if (book.author) {
 					return false;
 				}
 				return true;
@@ -52,7 +49,6 @@ export async function promptEditBook(book: Book) {
 					.map((author) => {
 						const match = author.trim().match(/(\S+)+/giu);
 						if (match) {
-							console.log(match);
 							return match.join(' ');
 						}
 						return author.trim();
@@ -67,7 +63,7 @@ export async function promptEditBook(book: Book) {
 			default: book.grade,
 			choices: Object.entries(Grade).map(([k, v]) => k),
 			when: (fill) => {
-				if (book.grade && fill.mode != 'edit') {
+				if (book.grade) {
 					return false;
 				}
 				return true;
@@ -80,7 +76,7 @@ export async function promptEditBook(book: Book) {
 			default: book.subject,
 			choices: Object.entries(Subject).map(([k, v]) => k),
 			when: (fill) => {
-				if (book.subject && fill.mode != 'edit') {
+				if (book.subject) {
 					return false;
 				}
 				return true;
@@ -90,26 +86,29 @@ export async function promptEditBook(book: Book) {
 			name: 'is_advanced',
 			message: 'Is advanced',
 			type: 'confirm',
+			default: book.is_advanced,
 			when: (fill) => {
-				if (book.is_advanced != undefined && fill.mode != 'edit') {
+				if (book.is_advanced != undefined) {
 					return false;
 				}
 				return true;
 			},
 		},
 	]);
-	delete fill.mode;
-	Object.entries(fill).map(([k, v]) => {
-		const filed = book[k as keyof typeof book];
-		(book[k as keyof typeof book] as typeof filed) = v as typeof filed;
-	});
-	console.log(book);
-	return book;
+	return {
+		title: fill.title || book.title,
+		author: fill.author || book.author,
+		grade: fill.grade || book.grade,
+		subject: fill.subject || book.subject,
+		is_advanced: fill.is_advanced || book.is_advanced,
+		image: book.image,
+		price: book.price,
+		id: book.id,
+	};
 }
 
 export async function promptEditBooks(books: Book[]) {
 	for (let book of books) {
-		console.log(book);
 		book = await promptEditBook(book);
 	}
 	return books;
