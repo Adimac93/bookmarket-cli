@@ -4,7 +4,7 @@ import * as cheerio from 'cheerio';
 import { fetchBook } from './loader';
 import { createSpinner } from 'nanospinner';
 import { Book } from '@prisma/client';
-import { promptEditBooks } from './editor';
+import { promptEditBook, promptEditBooks } from './editor';
 import { saveFile } from './common';
 
 import books from '../../books.json';
@@ -111,8 +111,6 @@ async function fetchSearchResults(query: string) {
 					});
 				}
 			}
-
-			console.log(title, url, image);
 		});
 
 		pageNumber++;
@@ -143,7 +141,14 @@ export async function promptFetchBook() {
 	});
 
 	try {
-		return await fetchBook(options.url);
+		const book = await fetchBook(options.url);
+		if (!registeredBooks.includes(book.id)) {
+			books.push(await promptEditBook(book));
+			await saveFile('./books.json', books);
+			console.log('Book saved');
+		} else {
+			console.log('Book already saved');
+		}
 	} catch (err) {
 		console.log((err as Error).message);
 		return;
