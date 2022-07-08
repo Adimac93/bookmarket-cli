@@ -23,26 +23,16 @@ async function editBook(book: Book): Promise<Book> {
 		{
 			name: 'title',
 			message: 'Title',
-			default: book.title || 'brak tytułu',
+			default: 'brak tytułu',
 			type: 'input',
-			when: (fill) => {
-				if (book.title) {
-					return false;
-				}
-				return true;
-			},
+			when: () => !book.title,
 		},
 		{
 			name: 'author',
 			message: 'Authors',
-			default: book.author || 'brak autora',
+			default: 'brak autora',
 			type: 'input',
-			when: (fill) => {
-				if (book.author) {
-					return false;
-				}
-				return true;
-			},
+			when: () => !book.author,
 			filter: (authors: string) => {
 				return authors
 					.split(',')
@@ -60,39 +50,21 @@ async function editBook(book: Book): Promise<Book> {
 			name: 'grade',
 			message: 'Grade',
 			type: 'list',
-			default: book.grade,
-			choices: Object.entries(Grade).map(([k, v]) => k),
-			when: (fill) => {
-				if (book.grade) {
-					return false;
-				}
-				return true;
-			},
+			choices: Object.keys(Grade),
+			when: () => !book.grade,
 		},
 		{
 			name: 'subject',
 			message: 'Subject',
 			type: 'search-list',
-			default: book.subject,
-			choices: Object.entries(Subject).map(([k, v]) => k),
-			when: (fill) => {
-				if (book.subject) {
-					return false;
-				}
-				return true;
-			},
+			choices: Object.keys(Subject),
+			when: () => !book.subject,
 		},
 		{
 			name: 'is_advanced',
 			message: 'Is advanced',
 			type: 'confirm',
-			default: book.is_advanced,
-			when: (fill) => {
-				if (book.is_advanced != undefined) {
-					return false;
-				}
-				return true;
-			},
+			when: () => book.is_advanced == undefined,
 		},
 	]);
 	return {
@@ -100,9 +72,10 @@ async function editBook(book: Book): Promise<Book> {
 		author: fill.author || book.author,
 		grade: fill.grade || book.grade,
 		subject: fill.subject || book.subject,
-		is_advanced: fill.is_advanced || book.is_advanced,
-		image: book.image,
+		is_advanced:
+			fill.is_advanced != undefined ? fill.is_advanced : book.is_advanced,
 		price: book.price,
+		image: book.image,
 		id: book.id,
 	};
 }
