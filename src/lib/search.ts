@@ -57,7 +57,7 @@ export async function promptSearchBooks() {
 
 	const editedBooks = await promptEditBooks(fetchedBooks);
 
-	saveFile('./books.json', editedBooks);
+	saveFile('./books.json', books.concat(editedBooks));
 }
 
 const gradeFilters = [13916, 13917, 13933, 13948];
