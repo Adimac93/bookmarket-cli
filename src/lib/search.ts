@@ -39,11 +39,14 @@ export async function promptSearchBooks() {
 
 	const fetchedBooks = await Promise.all<Book>(
 		search.books.map(async (url: string) => {
-			spinner.update({
-				text: `Fetching ${currentFetchNumber} / ${maxFetchNumber}`,
-			});
-			currentFetchNumber++;
-			return await fetchBook(`https://www.taniaksiazka.pl/${url}`);
+			return await fetchBook(`https://www.taniaksiazka.pl/${url}`).finally(
+				() => {
+					spinner.update({
+						text: `Fetching ${currentFetchNumber} / ${maxFetchNumber}`,
+					});
+					currentFetchNumber++;
+				},
+			);
 		}),
 	);
 	if (!fetchedBooks) {
