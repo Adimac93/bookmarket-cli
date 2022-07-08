@@ -81,10 +81,10 @@ async function editBook(book: Book): Promise<Book> {
 }
 
 export async function promptEditBooks(books: Book[]) {
-	for (let book of books) {
-		book = await promptEditBook(book);
-	}
-	return books;
+	const editedBooks: Book[] = [];
+	for (let book of books) editedBooks.push(await promptEditBook(book));
+
+	return editedBooks;
 }
 
 export async function promptEditSchema() {
