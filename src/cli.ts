@@ -3,6 +3,7 @@ import { promptFetchBook, promptSearchBooks } from './lib/search';
 
 import { prompt } from 'inquirer';
 import { promptViewBooks } from './lib/view';
+import { promptExit } from './lib/exit';
 
 async function main() {
 	while (true) {
@@ -13,6 +14,7 @@ async function main() {
 				{ name: 'schema editor', value: 'schema' },
 				{ name: 'book loader', value: 'books' },
 				{ name: 'book browser', value: 'search' },
+				{ name: 'view books', value: 'view' },
 				{ name: 'exit and save', value: 'exit' },
 			],
 			type: 'list',
@@ -23,7 +25,10 @@ async function main() {
 			await promptFetchBook();
 		} else if (options.menu == 'search') {
 			await promptSearchBooks();
+		} else if (options.menu == 'view') {
+			await promptViewBooks();
 		} else if (options.menu == 'exit') {
+			await promptExit();
 			break;
 		}
 	}
