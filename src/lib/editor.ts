@@ -93,14 +93,14 @@ export async function promptEditSchema() {
 			name: 'grade',
 			message: 'Choose grade',
 			type: 'list',
-			choices: Object.entries(Grade).map(([key, value]) => ({ value })),
+			choices: Object.keys(Grade),
 		},
 		{
 			name: 'subjects',
 			message: 'Choose subjects',
 			type: 'checkbox',
 			choices: (options) =>
-				Object.entries(Subject).map(([key, value]) => ({
+				Object.keys(Subject).map((value) => ({
 					value,
 					checked: (
 						schema[options.grade as keyof typeof schema] as Subject[]
