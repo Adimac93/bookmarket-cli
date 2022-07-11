@@ -47,8 +47,8 @@ export async function fetchBook(url: string): Promise<Book> {
 	} else {
 		grade = gradeConvert[details.grade as keyof typeof gradeConvert] as Grade;
 	}
-	const title = details?.title || '';
-	const is_advanced = details?.isAdvanced || false;
+	const title = details?.title || undefined!;
+	const is_advanced = details?.isAdvanced || undefined!;
 	const subject = subjectConvert[
 		path[1] as keyof typeof subjectConvert
 	] as Subject;
@@ -69,7 +69,7 @@ function getCoverInfo(data: string) {
 }
 function getDetails(data: string) {
 	const match =
-		/^(?<title>.*?)\.(?:.*?(?:klasa\s(?<grade>\d)))?(?:.*?(?<type>podręcznik|zbiór|ćwiczenia|zeszyt ćwiczeń))(?:.*?(?:zakres\s(?<level>rozszerzony)))?/iu.exec(
+		/^(?<title>.*?)\.(?:.*?(?:klas[ay]\s(?<grade>\d)))?(?:.*?(?<type>podręcznik|zbiór|ćwiczenia|zeszyt ćwiczeń))(?:.*?(?:zakres\s(?<level>rozszerzony)))?/iu.exec(
 			data,
 		);
 
