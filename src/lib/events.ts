@@ -1,5 +1,21 @@
 import { prompt } from 'inquirer';
+import { createSpinner } from 'nanospinner';
 import { booksStorage } from './sessions';
+
+export async function beforeStart() {
+	const spinner = createSpinner('Synching with database').start();
+	await booksStorage
+		.synch()
+		.then(() => {
+			spinner.success();
+		})
+		.catch(() => spinner.error())
+		.finally(() => {
+			if (booksStorage.registered.size != booksStorage.books.length) {
+				console.log('Muliple books containing the same id, using latest ones');
+			}
+		});
+}
 
 export async function promptExit() {
 	const options = await prompt([

@@ -3,9 +3,10 @@ import { promptFetchBook, promptSearchBooks } from './lib/search';
 
 import { prompt } from 'inquirer';
 import { promptViewBooks } from './lib/view';
-import { promptExit } from './lib/exit';
+import { promptExit, beforeStart } from './lib/events';
 
 async function main() {
+	await beforeStart();
 	while (true) {
 		const options = await prompt({
 			name: 'menu',
