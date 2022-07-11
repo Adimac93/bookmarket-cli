@@ -1,6 +1,31 @@
 import { Book, Grade, PrismaClient } from '@prisma/client';
+import * as dotenv from 'dotenv';
 
-export const db = new PrismaClient();
+dotenv.config();
+
+const isTestMode = process.env.NODE_ENV === 'test';
+
+export const db = new PrismaClient({
+	datasources: {
+		db: {
+			url: isTestMode
+				? process.env.DATABASE_URL_TEST
+				: process.env.DATABASE_URL,
+		},
+	},
+});
+
+if (isTestMode) {
+	console.log(`
+DB TEST MODE ON 
+change 'schema.prisma' to be able to use 'npx prisma studio'
+
+datasource db {
+	provider = "postgresql"
+	url      = env("DATABASE_URL_TEST")
+}
+`);
+}
 
 export async function uploadBook(book: Book, force?: boolean) {
 	try {
