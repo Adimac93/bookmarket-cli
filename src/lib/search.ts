@@ -5,12 +5,7 @@ import { fetchBook } from './loader';
 import { createSpinner } from 'nanospinner';
 import { Book } from '@prisma/client';
 import { promptEditBook, promptEditBooks } from './editor';
-import { saveFile } from './common';
-
-import books from '../../books.json';
-const registeredBooks = books.map((book) => {
-	return book.id;
-});
+import { booksStorage } from './sessions';
 
 const decoder = new TextDecoder('iso-8859-2');
 
@@ -57,7 +52,8 @@ export async function promptSearchBooks() {
 
 	const editedBooks = await promptEditBooks(fetchedBooks);
 
-	saveFile('./books.json', books.concat(editedBooks));
+	booksStorage.update(editedBooks);
+	await booksStorage.save();
 }
 
 const gradeFilters = [13916, 13917, 13933, 13948];
@@ -108,7 +104,7 @@ async function fetchSearchResults(query: string) {
 					choices.push({
 						name: title,
 						value: url,
-						disabled: registeredBooks.includes(isbn),
+						disabled: booksStorage.registered.has(isbn),
 					});
 				}
 			}
@@ -143,9 +139,9 @@ export async function promptFetchBook() {
 
 	try {
 		const book = await fetchBook(options.url);
-		if (!registeredBooks.includes(book.id)) {
-			books.push(await promptEditBook(book));
-			await saveFile('./books.json', books);
+		if (!booksStorage.registered.has(book.id)) {
+			booksStorage.update(await promptEditBook(book));
+			await booksStorage.save();
 			console.log('Book saved');
 		} else {
 			console.log('Book already saved');
