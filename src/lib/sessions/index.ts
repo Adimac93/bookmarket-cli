@@ -1,6 +1,7 @@
 import { Book, Grade, Subject } from '@prisma/client';
 import { File } from '../common';
 import { diff, uploadBook } from '../database';
+import { BooksSchema } from '../schema';
 
 interface Filter {
 	grade: Grade[];
@@ -36,12 +37,23 @@ export class Books extends File {
 		return this.books;
 	}
 
-	update(other: Book[] | Book) {
+	update(other: Book[] | Book, booksSchema?: BooksSchema) {
 		if (Array.isArray(other)) {
 			other.forEach((book) => {
 				if (!this.registered.has(book.id)) {
-					this.books.push(book);
-					this.registered.add(book.id);
+					if (booksSchema) {
+						if (booksSchema.schema[book.grade].includes(book.subject)) {
+							this.books.push(book);
+							this.registered.add(book.id);
+						} else {
+							console.log(
+								`Could not include book ${book.title} because its subject isn't in grade schema`,
+							);
+						}
+					} else {
+						this.books.push(book);
+						this.registered.add(book.id);
+					}
 				}
 			});
 			return;
