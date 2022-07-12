@@ -1,6 +1,5 @@
 import { Book, Grade, Subject } from '@prisma/client';
-import { saveFile } from '../common';
-import * as fs from 'node:fs';
+import { File } from '../common';
 import { diff, uploadBook } from '../database';
 
 interface Filter {
@@ -8,22 +7,13 @@ interface Filter {
 	subject?: Subject[];
 }
 
-export class Books {
-	readonly filePath: string;
+export class Books extends File {
 	readonly books: Book[];
 	readonly registered: Set<string>;
 
 	constructor(filePath: string) {
-		this.filePath = filePath;
-		const data = fs.readFileSync(this.filePath, {
-			flag: 'a+',
-			encoding: 'utf-8',
-		});
-		try {
-			this.books = JSON.parse(data);
-		} catch (err) {
-			this.books = [];
-		}
+		super(filePath);
+		this.books = super.load() || [];
 		this.registered = new Set(
 			this.books.map((book) => {
 				return book.id;
@@ -62,8 +52,8 @@ export class Books {
 		}
 	}
 
-	async save() {
-		await saveFile(this.filePath, this.books);
+	save() {
+		super.save(this.books);
 	}
 
 	async synch(force?: boolean) {
@@ -78,7 +68,7 @@ export class Books {
 			this.registered.add(book.id);
 		});
 
-		await this.save();
+		this.save();
 	}
 }
 
