@@ -1,4 +1,4 @@
-import * as fs from 'node:fs/promises';
+import * as fs from 'node:fs';
 
 export const gradeConvert = {
 	'1': 'FIRST',
@@ -39,6 +39,26 @@ export const testUrlSet = [
 	'https://www.taniaksiazka.pl/krok-w-przedsiebiorczosc-podrecznik-do-podstaw-przedsiebiorczosci-dla-szkol-ponadpodstawowych-tomasz-rachwal-p-1386260.html',
 ];
 
-export const saveFile = async (path: string, payload: any) => {
-	await fs.writeFile(path, JSON.stringify(payload, null, 4), 'utf-8');
-};
+export class File {
+	filePath: string;
+
+	constructor(filePath: string) {
+		this.filePath = filePath;
+	}
+
+	load<T>() {
+		const data = fs.readFileSync(this.filePath, {
+			encoding: 'utf-8',
+			flag: 'a+',
+		});
+		try {
+			return JSON.parse(data) as T;
+		} catch (err) {
+			return;
+		}
+	}
+
+	save(payload: any) {
+		fs.writeFileSync(this.filePath, JSON.stringify(payload, null, 4), 'utf-8');
+	}
+}
