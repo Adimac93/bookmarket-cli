@@ -11,11 +11,5 @@ export async function promptViewBooks() {
 	});
 
 	const books = booksStorage.get({ grade: options.grade });
-	console.log(books);
-}
-
-function filteredView(books: Book[], grade: Grade) {
-	return books.filter((book) => {
-		return book.grade == grade;
-	});
+	console.log(books || `No books for grade ${options.grade}`);
 }
