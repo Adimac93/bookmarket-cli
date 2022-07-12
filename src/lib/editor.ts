@@ -1,10 +1,9 @@
-import { saveFile } from './common';
 import { Book, Grade, Subject } from '@prisma/client';
 
 import { prompt, registerPrompt } from 'inquirer';
 registerPrompt('search-list', require('inquirer-search-list'));
 
-import schema from './../../schema.json';
+import { booksSchema } from './schema';
 
 export async function promptEditBook(book: Book) {
 	console.log(book);
@@ -99,15 +98,10 @@ export async function promptEditSchema() {
 			name: 'subjects',
 			message: 'Choose subjects',
 			type: 'checkbox',
-			choices: (options) =>
-				Object.keys(Subject).map((value) => ({
-					value,
-					checked: (
-						schema[options.grade as keyof typeof schema] as Subject[]
-					).includes(value as Subject),
-				})),
+			choices: (options) => booksSchema.get(options.grade),
 		},
 	]);
-	schema[options.grade as keyof typeof schema] = options.subjects;
-	await saveFile('./schema.json', schema);
+
+	booksSchema.set(options.grade, options.subjects);
+	booksSchema.save();
 }
