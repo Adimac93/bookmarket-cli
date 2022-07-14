@@ -3,7 +3,7 @@ import { createSpinner } from 'nanospinner';
 import { booksStorage } from './sessions';
 
 export async function beforeStart() {
-	const spinner = createSpinner('Synching with database').start();
+	const spinner = createSpinner('Syncing with database').start();
 	await booksStorage
 		.synch()
 		.then(() => {
@@ -36,6 +36,6 @@ export async function promptExit() {
 	if (options.synch) {
 		const isPush = options.synch == true;
 		booksStorage.synch(isPush);
-		console.log(`Synched with ${isPush ? 'push' : 'update'} mode`);
+		console.log(`Synced with ${isPush ? 'push' : 'update'} mode`);
 	}
 }

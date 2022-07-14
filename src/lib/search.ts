@@ -134,7 +134,7 @@ export async function promptFetchBook() {
 			return url;
 		},
 		validate: (url) =>
-			/(https:\/{2}w{3}.taniaksiazka.pl\/.*\.html)/i.test(url) || 'Invlaid url',
+			/(https:\/{2}w{3}.taniaksiazka.pl\/.*\.html)/i.test(url) || 'Invalid url',
 	});
 
 	try {
