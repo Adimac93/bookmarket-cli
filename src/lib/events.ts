@@ -4,19 +4,20 @@ import { booksStorage } from './sessions';
 
 export async function beforeStart() {
 	const spinner = createSpinner('Syncing with database').start();
-	await booksStorage
-		.synch()
-		.then(() => {
-			spinner.success();
-		})
-		.catch(() => spinner.error())
-		.finally(() => {
-			if (booksStorage.registered.size != booksStorage.books.length) {
-				console.log('Muliple books containing the same id, using latest ones');
-			}
-		});
+	try {
+		await booksStorage.synch();
+		spinner.success({ text: 'Synced with database', mark: '💾' });
+	} catch (err) {
+		spinner.error({ text: 'Failed to sync with database', mark: '❌' });
+	} finally {
+		if (booksStorage.registered.size != booksStorage.books.length) {
+			booksStorage.save();
+			console.log(
+				'🚧 Muliple loaclly saved books containing the same id! Using latest ones',
+			);
+		}
+	}
 }
-
 export async function promptExit() {
 	const options = await prompt([
 		{
