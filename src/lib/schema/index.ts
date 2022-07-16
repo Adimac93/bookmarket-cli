@@ -5,13 +5,14 @@ import { File } from '../common';
 export class BooksSchema extends File {
 	schema: Record<Grade, Subject[]>;
 
-	constructor(filePath: string) {
+	constructor(filePath: string, defaults?: Subject[]) {
+		let commonSubjects = defaults ?? [];
 		super(filePath);
 		this.schema = super.load() || {
-			FIRST: [],
-			SECOND: [],
-			THIRD: [],
-			FOURTH: [],
+			FIRST: commonSubjects,
+			SECOND: commonSubjects,
+			THIRD: commonSubjects,
+			FOURTH: commonSubjects,
 		};
 	}
 
@@ -35,4 +36,8 @@ export class BooksSchema extends File {
 	}
 }
 
-export const booksSchema = new BooksSchema('./schema.json');
+export const booksSchema = new BooksSchema('./schema.json', [
+	'MATH',
+	'POLISH',
+	'ENGLISH',
+]);
