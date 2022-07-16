@@ -8,15 +8,16 @@ import { promptExit, beforeStart } from './lib/events';
 async function main() {
 	await beforeStart();
 	while (true) {
+		console.log('---------------------');
 		const options = await prompt({
 			name: 'menu',
 			message: 'Choose menu',
 			choices: [
-				{ name: 'schema editor', value: 'schema' },
-				{ name: 'book loader', value: 'books' },
-				{ name: 'book browser', value: 'search' },
-				{ name: 'view books', value: 'view' },
-				{ name: 'exit and save', value: 'exit' },
+				{ name: '🔨 schema editor', value: 'schema' },
+				{ name: '🚚 book loader', value: 'books' },
+				{ name: '📡 book browser', value: 'search' },
+				{ name: '📚 view books', value: 'view' },
+				{ name: '🧰 exit and save', value: 'exit' },
 			],
 			type: 'list',
 		});
