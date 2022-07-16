@@ -120,9 +120,6 @@ describe('Books state session storage', () => {
 		});
 		expect(books).toHaveLength(2);
 	});
-	it('save to file', async () => {
-		expect(await booksStorage.save());
-	});
 	it('synch with database', async () => {
 		await booksStorage.synch();
 		const books = booksStorage.get();
@@ -131,8 +128,10 @@ describe('Books state session storage', () => {
 	it('synch with database (force)', async () => {
 		await booksStorage.synch(true);
 		const books = booksStorage.get();
-		console.log(books);
 		expect(books).toHaveLength(6);
+	});
+	it('save to file', async () => {
+		expect(await booksStorage.save());
 	});
 	it('read from file', () => {
 		booksStorage = new Books(savePath);

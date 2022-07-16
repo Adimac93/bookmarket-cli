@@ -65,7 +65,11 @@ export class Books extends File {
 	}
 
 	save() {
-		super.save(this.books);
+		let registered = this.registered;
+		let books = this.books.reverse().filter((book) => {
+			return registered.delete(book.id);
+		});
+		super.save(books);
 	}
 
 	async synch(force?: boolean) {
@@ -80,7 +84,7 @@ export class Books extends File {
 			this.registered.add(book.id);
 		});
 
-		this.save();
+		super.save(this.books);
 	}
 }
 
