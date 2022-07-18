@@ -22,14 +22,14 @@ async function editBook(book: Book): Promise<Book> {
 	const fill = await prompt([
 		{
 			name: 'title',
-			message: 'Title',
+			message: '🏷 Title',
 			default: 'brak tytułu',
 			type: 'input',
 			when: () => !book.title,
 		},
 		{
 			name: 'author',
-			message: 'Authors',
+			message: '✍ Authors',
 			default: 'brak autora',
 			type: 'input',
 			when: () => !book.author,
@@ -48,21 +48,21 @@ async function editBook(book: Book): Promise<Book> {
 		},
 		{
 			name: 'grade',
-			message: 'Grade',
+			message: '🎓 Grade',
 			type: 'list',
 			choices: Object.keys(Grade),
 			when: () => !book.grade,
 		},
 		{
 			name: 'subject',
-			message: 'Subject',
+			message: '📑 Subject',
 			type: 'search-list',
 			choices: Object.keys(Subject),
 			when: () => !book.subject,
 		},
 		{
 			name: 'is_advanced',
-			message: 'Is advanced',
+			message: '🚩 Is advanced',
 			type: 'confirm',
 			when: () => book.is_advanced == undefined,
 		},
@@ -92,13 +92,13 @@ export async function promptEditSchema() {
 	const options = await prompt([
 		{
 			name: 'grade',
-			message: 'Choose grade',
+			message: '🎓 Choose grade',
 			type: 'list',
 			choices: Object.keys(Grade),
 		},
 		{
 			name: 'subjects',
-			message: 'Choose subjects',
+			message: '📑 Choose subjects',
 			type: 'checkbox',
 			choices: (options) => booksSchema.get(options.grade),
 		},
