@@ -10,13 +10,20 @@ import { booksStorage } from './sessions';
 const decoder = new TextDecoder('iso-8859-2');
 
 export async function promptSearchBooks() {
-	const options = await prompt({
-		name: 'query',
-		message: 'Search book',
-		type: 'input',
-	});
+	const options = await prompt([
+		{
+			name: 'isFiltered',
+			message: 'Use auto filtering',
+			type: 'confirm',
+		},
+		{
+			name: 'query',
+			message: 'Search book',
+			type: 'input',
+		},
+	]);
 
-	const choices = await fetchSearchResults(options.query);
+	const choices = await fetchSearchResults(options.query, options.isFiltered);
 	if (!choices) return;
 
 	const search = await prompt({
@@ -58,7 +65,7 @@ export async function promptSearchBooks() {
 
 const gradeFilters = [13916, 13917, 13933, 13948];
 
-async function fetchSearchResults(query: string) {
+async function fetchSearchResults(query: string, isFiltered: boolean) {
 	let filter;
 	const match = /\d/.exec(query);
 	if (match) {
@@ -76,7 +83,9 @@ async function fetchSearchResults(query: string) {
 		const response = await fetch(
 			`https://www.taniaksiazka.pl/Szukaj/q-${query.split(' ').join('+')}${
 				pageNumber == 1 ? '' : `/page-${pageNumber}`
-			}?params[c]=${filter}&params[f]=no,p&params[last]=f`,
+			}${
+				isFiltered ? `?params[c]=${filter}&params[f]=no,p&params[last]=f` : ''
+			}`,
 		).catch((err) => {
 			spinner.error({ text: 'Bad connection' });
 			throw new Error('Check your internet connection');
