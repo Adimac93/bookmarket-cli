@@ -6,9 +6,8 @@
 	"types": "dist/index.d.ts",
 	"type": "commonjs",
 	"scripts": {
-		"dev": "ts-node ./src/index.ts",
+		"dev": "ts-node --esm ./src/index.ts",
 		"dev:watch": "nodemon --exec npm run dev --watch ./src/index.ts",
-		"cli": "ts-node --esm ./src/cli.ts",
 		"test": "jest",
 		"build": "tsc"
 	},
