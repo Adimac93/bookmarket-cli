@@ -2,6 +2,7 @@ import { Book, Grade } from '@prisma/client';
 import { prompt } from 'inquirer';
 import { booksStorage } from './sessions';
 import chalk from 'chalk';
+import { fetchedBook } from './common';
 
 export async function promptViewBooks() {
 	const options = await prompt({
@@ -32,7 +33,11 @@ export function displayObject(
 	return `${prefix ?? ''}\n${props.join('\n')}\n${suffix ?? ''}`;
 }
 
-export function displayBook(book: Book, prefix?: string, suffix?: string) {
+export function displayBook(
+	book: Book | fetchedBook,
+	prefix?: string,
+	suffix?: string,
+) {
 	const format = (value: unknown, modifier: chalk.ChalkFunction) => {
 		return value != undefined ? modifier(value) : chalk.red('?');
 	};

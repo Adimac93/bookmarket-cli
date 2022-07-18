@@ -1,5 +1,17 @@
+import { Grade, Subject } from '@prisma/client';
 import * as fs from 'node:fs';
 
+export interface fetchedBook {
+	id: string;
+	title: string;
+	author: string | null;
+	price: number;
+	image: string;
+	grade: Grade | undefined;
+	subject: Subject | undefined;
+	is_advanced: boolean | undefined;
+	url: string;
+}
 export const gradeConvert = {
 	'1': 'FIRST',
 	'2': 'SECOND',

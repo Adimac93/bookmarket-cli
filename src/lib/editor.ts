@@ -1,12 +1,13 @@
 import { Book, Grade, Subject } from '@prisma/client';
 
 import { prompt, registerPrompt } from 'inquirer';
+import { fetchedBook } from './common';
 registerPrompt('search-list', require('inquirer-search-list'));
 
 import { booksSchema } from './schema';
 import { displayBook } from './view';
 
-export async function promptEditBook(book: Book) {
+export async function promptEditBook(book: fetchedBook) {
 	console.log(displayBook(book));
 	const editedBook = await editBook(book);
 	if (book == editedBook) {
@@ -18,7 +19,7 @@ export async function promptEditBook(book: Book) {
 	return editedBook;
 }
 
-async function editBook(book: Book): Promise<Book> {
+async function editBook(book: fetchedBook): Promise<Book> {
 	const fill = await prompt([
 		{
 			name: 'title',

@@ -1,11 +1,11 @@
 import * as cheerio from 'cheerio';
-import { gradeConvert, subjectConvert } from './common';
-import { Book, Grade, Subject } from '@prisma/client';
+import { gradeConvert, subjectConvert, fetchedBook } from './common';
+import { Grade, Subject } from '@prisma/client';
 import fetch from 'node-fetch';
 
 const decoder = new TextDecoder('iso-8859-2');
 
-export async function fetchBook(url: string): Promise<Book> {
+export async function fetchBook(url: string): Promise<fetchedBook> {
 	const response = await fetch(url).catch((err) => {
 		throw new Error('Check your internet connection');
 	});
@@ -17,12 +17,21 @@ export async function fetchBook(url: string): Promise<Book> {
 
 	const $ = cheerio.load(text);
 
-	const imageInfo = getCoverInfo(
-		$('div .col-left4 .full-col img').attr('src') || '',
-	);
+	const title = $('div .product-info span').text().split('.')[0];
 
-	const image = imageInfo?.path || '';
-	const id = imageInfo?.isbn || '';
+	const price = parseInt($('.our-price strong #updateable_price-zl').text());
+
+	let image: string;
+	let id: string;
+	const coverMatch = /(?<image>\/\w+\/(?<id>\d+)\..*)/.exec(
+		$('div .col-left4 .full-col img').attr('src') ?? '',
+	);
+	if (coverMatch?.groups) {
+		image = coverMatch.groups.image;
+		id = coverMatch.groups.id;
+	} else {
+		throw new Error('Missing cover');
+	}
 
 	const authors: Array<string> = [];
 	$('div .author h2').each((i, author) => {
@@ -30,6 +39,8 @@ export async function fetchBook(url: string): Promise<Book> {
 	});
 	const author = authors.join(', ');
 
+	let grade: Grade | undefined;
+	let subject: Subject | undefined;
 	const path = $('div #path')
 		.text()
 		.trim()
@@ -38,49 +49,13 @@ export async function fetchBook(url: string): Promise<Book> {
 		.split('\n')
 		.slice(-3);
 
-	const details = getDetails($('div .product-info span').text());
-	let grade: Grade = undefined!;
-	if (!details?.grade) {
-		const match = /klasa\s(\d)/i.exec(path[0]);
-		if (match)
-			grade = gradeConvert[match[1] as keyof typeof gradeConvert] as Grade;
-	} else {
-		grade = gradeConvert[details.grade as keyof typeof gradeConvert] as Grade;
+	if (path[0].includes('klasa')) {
+		grade = gradeConvert[path[0].at(-1) as keyof typeof gradeConvert] as Grade;
+		subject = subjectConvert[path[1] as keyof typeof subjectConvert] as Subject;
 	}
-	const title = details?.title || undefined!;
-	const is_advanced = details?.isAdvanced || undefined!;
-	const subject = subjectConvert[
-		path[1] as keyof typeof subjectConvert
-	] as Subject;
 
-	const price = parseInt($('.our-price strong #updateable_price-zl').text());
-	// const description = $("#opis").text();
+	let is_advanced: boolean | undefined;
+	is_advanced = undefined;
 
 	return { title, author, grade, subject, is_advanced, image, id, price, url };
-}
-
-function getCoverInfo(data: string) {
-	const match = /(?<path>\/\w+\/(?<isbn>\d+)\..*)/.exec(data);
-	if (match?.groups) {
-		const path = match.groups.path;
-		const isbn = match.groups.isbn;
-		return { path, isbn };
-	}
-}
-function getDetails(data: string) {
-	const match =
-		/^(?<title>.*?)\.(?:.*?(?:klas[ay]\s(?<grade>\d)))?(?:.*?(?<type>podręcznik|zbiór|ćwiczenia|zeszyt ćwiczeń))(?:.*?(?:zakres\s(?<level>rozszerzony)))?/iu.exec(
-			data,
-		);
-
-	if (match?.groups) {
-		const title = match.groups.title;
-		const isAdvanced = match.groups.level == 'rozszerzony';
-		const grade = match.groups.grade;
-		const type =
-			match.groups.type.toLowerCase() == 'podręcznik'
-				? 'podręcznik'
-				: 'ćwiczenia';
-		return { title, isAdvanced, grade, type };
-	}
 }
