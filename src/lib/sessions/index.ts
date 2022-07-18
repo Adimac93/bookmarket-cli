@@ -89,19 +89,4 @@ export class Books extends File {
 		super.save(this.books);
 	}
 }
-class StorageBook {
-	book: Book;
-
-	constructor(book: Book) {
-		this.book = book;
-	}
-
-	async redefine() {
-		try {
-			this.book = await promptEditBook(await fetchBook(this.book.url));
-		} catch (err) {
-			console.log((err as Error).message);
-		}
-	}
-}
 export const booksStorage = new Books('./books.json');
