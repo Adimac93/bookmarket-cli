@@ -4,14 +4,15 @@ import { prompt, registerPrompt } from 'inquirer';
 registerPrompt('search-list', require('inquirer-search-list'));
 
 import { booksSchema } from './schema';
+import { displayBook } from './view';
 
 export async function promptEditBook(book: Book) {
-	console.log(book);
+	console.log(displayBook(book));
 	const editedBook = await editBook(book);
 	if (book == editedBook) {
 		console.log('Nothing changed');
 	} else {
-		console.log(editedBook);
+		console.log(displayBook(editedBook));
 		console.log('---');
 	}
 	return editedBook;
@@ -76,6 +77,7 @@ async function editBook(book: Book): Promise<Book> {
 		price: book.price,
 		image: book.image,
 		id: book.id,
+		url: book.url,
 	};
 }
 

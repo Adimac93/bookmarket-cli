@@ -56,7 +56,7 @@ export async function fetchBook(url: string): Promise<Book> {
 	const price = parseInt($('.our-price strong #updateable_price-zl').text());
 	// const description = $("#opis").text();
 
-	return { title, author, grade, subject, is_advanced, image, id, price };
+	return { title, author, grade, subject, is_advanced, image, id, price, url };
 }
 
 function getCoverInfo(data: string) {
