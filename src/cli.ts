@@ -4,8 +4,10 @@ import { promptFetchBook, promptSearchBooks } from './lib/search';
 import { prompt } from 'inquirer';
 import { promptViewBooks } from './lib/view';
 import { promptExit, beforeStart } from './lib/events';
+import * as gradient from 'gradient-string';
 
 async function main() {
+	console.log(gradient.passion(logo));
 	await beforeStart();
 	while (true) {
 		console.log('---------------------');
@@ -35,5 +37,18 @@ async function main() {
 		}
 	}
 }
+
+const logo = `
+	.---.                        .---.
+    .---|___|            .---.       |~~~|
+.---|===|---|_           |___|       |~~~|---.
+|   |===|   |  \\     .---!~~~|   .---|   |---|
+|   |   |   |   \\    |===|   |---|%%%|   |   |
+| B | O | O |\\ K \\   | M | A | R | K | E | T |
+|   |   |   | \\   \\  |===|   |===|   |   |   |
+|   |   |___|  \\   \\ |   |___|___|   |~~~|___|
+|   |===|---|   \\   \\|===|~~~|---|%%%|~~~|---|
+'---^---^---'    \`---\'---^---^---^---^---'---' A powerful tool for changing the world...
+`;
 
 main();
