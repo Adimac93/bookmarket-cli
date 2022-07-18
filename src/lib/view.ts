@@ -33,33 +33,33 @@ export function displayObject(
 }
 
 export function displayBook(book: Book, prefix?: string, suffix?: string) {
-	let color = colorPricing(book.price, 70);
-
+	const format = (value: unknown, modifier: chalk.ChalkFunction) => {
+		return value != undefined ? modifier(value) : chalk.red('?');
+	};
 	let fields = [
-		`Title       : ${chalk.underline(book.title)}`,
-		`Author      : ${chalk.italic(book.author)}`,
-		`Grade       : ${chalk.rgb(73, 148, 245)(book.grade)}`,
-		`Subject     : ${chalk.rgb(73, 148, 245)(book.subject)}`,
-		`Price       : ${chalk.rgb(color[0], color[1], color[2])(book.price)}`,
-		`Is advanced : ${
-			book.is_advanced
-				? chalk.green(book.is_advanced)
-				: chalk.red(book.is_advanced)
-		}`,
+		`Title       : ${format(book.title, chalk.underline)}`,
+		`Author      : ${format(book.author, chalk.italic)}`,
+		`Grade       : ${format(book.grade, chalk.rgb(73, 148, 245))}`,
+		`Subject     : ${format(book.subject, chalk.rgb(73, 148, 245))}`,
+		`Price       : ${colorPricing(book.price, 70)}`,
+		`Is advanced : ${format(
+			book.is_advanced,
+			book.is_advanced ? chalk.green : chalk.yellow,
+		)}`,
 	];
 	return `${prefix ?? ''}\n${fields.join('\n')}\n${suffix ?? ''}`;
 }
 
-function colorPricing(price: number, maxPrice: number) {
+function colorPricing(price: number, maxPrice: number): string {
 	let blue = 70;
 	if (price > maxPrice) {
-		return [252, 0, blue];
+		return chalk.rgb(252, 0, blue)(price);
 	}
 
 	let step = 504 / maxPrice;
 	let indicator = Math.floor(step * price);
 	if (indicator <= 252) {
-		return [3 + indicator, 252, blue];
+		return chalk.rgb(3 + indicator, 252, blue)(price);
 	}
-	return [252, 252 - (indicator - 252), blue];
+	return chalk.rgb(252, 252 - (indicator - 252), blue)(price);
 }
