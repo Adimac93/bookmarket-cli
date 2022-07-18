@@ -16,6 +16,7 @@ model Book {
   grade             Grade
   subject           Subject
   is_advanced       Boolean
+  url               String
   BookWithCondition BookWithCondition[]
 }
 
