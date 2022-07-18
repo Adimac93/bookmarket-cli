@@ -22,6 +22,7 @@ describe('Books state session storage', () => {
 					grade: 'SECOND',
 					subject: 'BIOLOGY',
 					is_advanced: true,
+					url: 'none',
 				},
 				{
 					id: '6',
@@ -32,6 +33,7 @@ describe('Books state session storage', () => {
 					grade: 'FOURTH',
 					subject: 'BIOLOGY',
 					is_advanced: true,
+					url: 'none',
 				},
 			],
 		});
@@ -47,6 +49,7 @@ describe('Books state session storage', () => {
 			grade: 'SECOND',
 			subject: 'BIOLOGY',
 			is_advanced: false,
+			url: 'none',
 		};
 		const books: Book[] = [
 			{
@@ -58,6 +61,7 @@ describe('Books state session storage', () => {
 				grade: 'SECOND',
 				subject: 'BIOLOGY',
 				is_advanced: false,
+				url: 'none',
 			},
 			{
 				id: '3',
@@ -68,6 +72,7 @@ describe('Books state session storage', () => {
 				grade: 'THIRD',
 				subject: 'BIOLOGY',
 				is_advanced: true,
+				url: 'none',
 			},
 			{
 				id: '4',
@@ -78,6 +83,7 @@ describe('Books state session storage', () => {
 				grade: 'THIRD',
 				subject: 'MATH',
 				is_advanced: true,
+				url: 'none',
 			},
 			{
 				id: '5',
@@ -88,6 +94,7 @@ describe('Books state session storage', () => {
 				grade: 'FIRST',
 				subject: 'HISTORY',
 				is_advanced: true,
+				url: 'none',
 			},
 			// doubled id - shouldn't be added
 			{
@@ -99,6 +106,7 @@ describe('Books state session storage', () => {
 				grade: 'FIRST',
 				subject: 'HISTORY',
 				is_advanced: true,
+				url: 'none',
 			},
 		];
 		booksStorage.update(book);
