@@ -1,7 +1,7 @@
 import { Book, Grade, Subject } from '@prisma/client';
 
 import { prompt, registerPrompt } from 'inquirer';
-import { fetchedBook } from './common';
+import { fetchedBook, gradeConvert, subjectConvert } from './common';
 registerPrompt('search-list', require('inquirer-search-list'));
 
 import { booksSchema } from './schema';
@@ -51,14 +51,18 @@ async function editBook(book: fetchedBook): Promise<Book> {
 			name: 'grade',
 			message: '🎓 Grade',
 			type: 'list',
-			choices: Object.keys(Grade),
+			choices: Object.entries(gradeConvert).map(([name, value]) => {
+				return { name, value };
+			}),
 			when: () => !book.grade,
 		},
 		{
 			name: 'subject',
 			message: '📑 Subject',
 			type: 'search-list',
-			choices: Object.keys(Subject),
+			choices: Object.entries(subjectConvert).map(([name, value]) => {
+				return { name, value };
+			}),
 			when: () => !book.subject,
 		},
 		{
