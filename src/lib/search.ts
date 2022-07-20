@@ -23,6 +23,11 @@ export async function promptSearchBooks() {
 		},
 	]);
 
+	if ((options.query as string).trim() == '') {
+		console.log('✖ Search cancelled');
+		return;
+	}
+
 	const choices = await fetchSearchResults(options.query, options.isFiltered);
 	if (!choices) return;
 
