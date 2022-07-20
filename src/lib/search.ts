@@ -32,7 +32,7 @@ export async function promptSearchBooks() {
 		type: 'checkbox',
 		choices,
 	});
-	if (!search.books) return;
+	if ((search.books as Array<any>).length == 0) return;
 
 	const spinner = createSpinner('Fetching books').start();
 
