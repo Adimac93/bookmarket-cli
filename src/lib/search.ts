@@ -1,13 +1,11 @@
 import { prompt, ChoiceCollection } from 'inquirer';
 import fetch from 'node-fetch';
 import * as cheerio from 'cheerio';
-import { fetchBook } from './loader';
+import { fetchBook, getPageQuery } from './loader';
 import { createSpinner } from 'nanospinner';
 import { Book } from '@prisma/client';
 import { promptEditBook, promptEditBooks } from './editor';
 import { booksStorage } from './sessions';
-
-const decoder = new TextDecoder('iso-8859-2');
 
 export async function promptSearchBooks() {
 	const options = await prompt([
@@ -85,22 +83,19 @@ async function fetchSearchResults(query: string, isFiltered: boolean) {
 	let isNext = true;
 	while (isNext) {
 		spinner.update({ text: `Fetching page ${pageNumber}` });
-		const response = await fetch(
-			`https://www.taniaksiazka.pl/Szukaj/q-${query.split(' ').join('+')}${
-				pageNumber == 1 ? '' : `/page-${pageNumber}`
-			}${
-				isFiltered ? `?params[c]=${filter}&params[f]=no,p&params[last]=f` : ''
-			}`,
-		).catch((err) => {
-			spinner.error({ text: 'Bad connection' });
-			throw new Error('Check your internet connection');
-		});
+		const url = `https://www.taniaksiazka.pl/Szukaj/q-${query
+			.split(' ')
+			.join('+')}${pageNumber == 1 ? '' : `/page-${pageNumber}`}${
+			isFiltered ? `?params[c]=${filter}&params[f]=no,p&params[last]=f` : ''
+		}`;
 
-		const buffer = await response.arrayBuffer();
-
-		const text = decoder.decode(buffer);
-
-		const $ = cheerio.load(text);
+		let $: cheerio.CheerioAPI;
+		try {
+			$ = await getPageQuery(url);
+		} catch (err) {
+			spinner.error({ text: (err as Error).message, mark: '🌐' });
+			return;
+		}
 
 		const products = $('.product-container');
 		products.each((i, el) => {

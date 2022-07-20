@@ -6,16 +6,7 @@ import fetch from 'node-fetch';
 const decoder = new TextDecoder('iso-8859-2');
 
 export async function fetchBook(url: string): Promise<fetchedBook> {
-	const response = await fetch(url).catch((err) => {
-		throw new Error('Check your internet connection');
-	});
-	if (!response.ok) throw new Error(`Cannot fetch book from ${url}`);
-
-	const buffer = await response.arrayBuffer();
-
-	const text = decoder.decode(buffer);
-
-	const $ = cheerio.load(text);
+	const $ = await getPageQuery(url);
 
 	const title = $('div .product-info span').text().split('.')[0];
 
@@ -58,4 +49,14 @@ export async function fetchBook(url: string): Promise<fetchedBook> {
 	is_advanced = undefined;
 
 	return { title, author, grade, subject, is_advanced, image, id, price, url };
+}
+
+export async function getPageQuery(url: string) {
+	const response = await fetch(url).catch((err) => {
+		throw new Error('Check your internet connection');
+	});
+	if (!response.ok) throw new Error(`Cannot fetch book from ${url}`);
+	const buffer = await response.arrayBuffer();
+	const text = decoder.decode(buffer);
+	return cheerio.load(text);
 }
