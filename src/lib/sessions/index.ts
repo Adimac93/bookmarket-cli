@@ -1,9 +1,8 @@
 import { Book, Grade, Subject } from '@prisma/client';
 import { File } from '../common';
 import { diff, uploadBook } from '../database';
-import { promptEditBook } from '../editor';
-import { fetchBook } from '../loader';
 import { BooksSchema } from '../schema';
+import * as config from '../../config';
 
 interface Filter {
 	grade: Grade[];
@@ -89,4 +88,4 @@ export class Books extends File {
 		super.save(this.books);
 	}
 }
-export const booksStorage = new Books('./books.json');
+export const booksStorage = new Books(`${config.saveDir}/books.json`);

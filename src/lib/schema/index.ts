@@ -1,6 +1,7 @@
 import { Grade, Subject } from '@prisma/client';
 import { ChoiceCollection } from 'inquirer';
 import { File } from '../common';
+import * as config from '../../config';
 
 export class BooksSchema extends File {
 	schema: Record<Grade, Subject[]>;
@@ -36,8 +37,7 @@ export class BooksSchema extends File {
 	}
 }
 
-export const booksSchema = new BooksSchema('./schema.json', [
-	'MATH',
-	'POLISH',
-	'ENGLISH',
-]);
+export const booksSchema = new BooksSchema(
+	`${config.saveDir}/schema.json`,
+	config.defaultSubjects as Subject[],
+);
