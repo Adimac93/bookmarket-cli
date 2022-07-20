@@ -4,12 +4,16 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 const isTestMode = process.env.NODE_ENV === 'test';
-
+const isRemoteDb = process.env.IS_REMOTE_DB === 'true';
 export const db = new PrismaClient({
 	datasources: {
 		db: {
 			url: isTestMode
-				? process.env.DATABASE_URL_TEST
+				? isRemoteDb
+					? process.env.DATABASE_URL_CLOUD_TEST
+					: process.env.DATABASE_URL_TEST
+				: isRemoteDb
+				? process.env.DATABASE_URL_CLOUD
 				: process.env.DATABASE_URL,
 		},
 	},
@@ -22,7 +26,7 @@ change 'schema.prisma' to be able to use 'npx prisma studio'
 
 datasource db {
 	provider = "postgresql"
-	url      = env("DATABASE_URL_TEST")
+	url      = env("DATABASE_URL_CLOUD_TEST" | "DATABASE_URL_TEST") <--- change db url to one of these
 }
 `);
 }
