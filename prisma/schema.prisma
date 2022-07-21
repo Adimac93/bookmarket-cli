@@ -11,10 +11,10 @@ model Book {
   id                String              @id
   title             String
   author            String
-  price             Int
   image             String
   grade             Grade
   subject           Subject
+  price             Int
   is_advanced       Boolean
   url               String
   BookWithCondition BookWithCondition[]
@@ -24,8 +24,8 @@ model BookCopy {
   id                String            @id
   owner_id          String
   status            String
-  book_id           String
   condition         Condition
+  book_id           String
   BookWithCondition BookWithCondition @relation(fields: [book_id, condition], references: [book_id, condition])
   User              User              @relation(fields: [owner_id], references: [id])
 }
@@ -53,10 +53,10 @@ model BookWithCondition {
 model User {
   id           String       @id
   name         String
-  phone_number String?      @unique
   discord_id   String?      @unique
-  google_id    String?      @unique
+  phone_number String?      @unique
   facebook_id  String?      @unique
+  google_id    String?      @unique
   BookCopy     BookCopy[]
   BookInCart   BookInCart[]
 }
@@ -89,4 +89,5 @@ enum Subject {
   PHYSICS
   COMPUTER_SCIENCE
   ENTREPRENEURSHIP
+  EDUCATION_FOR_SAFETY
 }
