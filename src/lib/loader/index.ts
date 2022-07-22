@@ -1,9 +1,9 @@
 import * as cheerio from 'cheerio';
-import { gradeConvert, subjectConvert, fetchedBook } from './common';
+import { gradeConvert, subjectConvert, fetchedBook } from '../common';
 import { Grade, Subject } from '@prisma/client';
 import fetch from 'node-fetch';
 
-const decoder = new TextDecoder('iso-8859-2');
+export const decoder = new TextDecoder('iso-8859-2');
 
 export async function fetchBook(url: string): Promise<fetchedBook> {
 	const $ = await getPageQuery(url);
@@ -51,11 +51,16 @@ export async function fetchBook(url: string): Promise<fetchedBook> {
 	return { title, author, grade, subject, is_advanced, image, id, price, url };
 }
 
-export async function getPageQuery(url: string) {
+export async function fetchPage(url: string) {
 	const response = await fetch(url).catch((err) => {
 		throw new Error('Check your internet connection');
 	});
 	if (!response.ok) throw new Error(`Cannot fetch book from ${url}`);
+	return response;
+}
+
+export async function getPageQuery(url: string) {
+	const response = await fetchPage(url);
 	const buffer = await response.arrayBuffer();
 	const text = decoder.decode(buffer);
 	return cheerio.load(text);
