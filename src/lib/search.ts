@@ -1,6 +1,5 @@
 import { prompt, ChoiceCollection } from 'inquirer';
-import fetch from 'node-fetch';
-import * as cheerio from 'cheerio';
+import { CheerioAPI } from 'cheerio';
 import { fetchBook, getPageQuery } from './loader';
 import { createSpinner } from 'nanospinner';
 import { Book } from '@prisma/client';
@@ -34,6 +33,7 @@ export async function promptSearchBooks() {
 		message: 'Search results',
 		type: 'checkbox',
 		choices,
+		loop: false,
 	});
 	if ((search.books as Array<any>).length == 0) return;
 
@@ -44,14 +44,14 @@ export async function promptSearchBooks() {
 
 	const fetchedBooks = await Promise.all<Book>(
 		search.books.map(async (url: string) => {
-			return await fetchBook(`https://www.taniaksiazka.pl/${url}`).finally(
-				() => {
-					spinner.update({
-						text: `Fetching ${currentFetchNumber} / ${maxFetchNumber}`,
-					});
-					currentFetchNumber++;
-				},
-			);
+			try {
+				return await fetchBook(`https://www.taniaksiazka.pl/${url}`);
+			} finally {
+				spinner.update({
+					text: `Fetching ${currentFetchNumber} / ${maxFetchNumber}`,
+				});
+				currentFetchNumber++;
+			}
 		}),
 	);
 	if (!fetchedBooks) {
@@ -89,7 +89,7 @@ async function fetchSearchResults(query: string, isFiltered: boolean) {
 			isFiltered ? `?params[c]=${filter}&params[f]=no,p&params[last]=f` : ''
 		}`;
 
-		let $: cheerio.CheerioAPI;
+		let $: CheerioAPI;
 		try {
 			$ = await getPageQuery(url);
 		} catch (err) {
