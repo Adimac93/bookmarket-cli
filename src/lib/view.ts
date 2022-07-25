@@ -46,7 +46,7 @@ export function displayBook(
 		`Author      : ${format(book.author, chalk.italic)}`,
 		`Grade       : ${format(book.grade, chalk.rgb(73, 148, 245))}`,
 		`Subject     : ${format(book.subject, chalk.rgb(73, 148, 245))}`,
-		`Price       : ${colorPricing(book.price, 70)}`,
+		`Price       : ${colorValue(book.price, 70)}`,
 		`Is advanced : ${format(
 			book.is_advanced,
 			book.is_advanced ? chalk.green : chalk.yellow,
@@ -55,16 +55,16 @@ export function displayBook(
 	return `${prefix ?? ''}\n${fields.join('\n')}\n${suffix ?? ''}`;
 }
 
-function colorPricing(price: number, maxPrice: number): string {
+export function colorValue(value: number, maxValue: number): string {
 	let blue = 70;
-	if (price > maxPrice) {
-		return chalk.rgb(252, 0, blue)(price);
+	if (value > maxValue) {
+		return chalk.rgb(252, 0, blue)(value);
 	}
 
-	let step = 504 / maxPrice;
-	let indicator = Math.floor(step * price);
+	let step = 504 / maxValue;
+	let indicator = Math.floor(step * value);
 	if (indicator <= 252) {
-		return chalk.rgb(3 + indicator, 252, blue)(price);
+		return chalk.rgb(3 + indicator, 252, blue)(value);
 	}
-	return chalk.rgb(252, 252 - (indicator - 252), blue)(price);
+	return chalk.rgb(252, 252 - (indicator - 252), blue)(value);
 }

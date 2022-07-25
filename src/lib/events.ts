@@ -3,6 +3,7 @@ import { prompt } from 'inquirer';
 import { createSpinner } from 'nanospinner';
 import { isRemoteDb, isTestMode } from './database';
 import { booksStorage } from './sessions';
+import { colorValue } from './view';
 
 export async function beforeStart() {
 	console.log(
@@ -16,9 +17,14 @@ export async function beforeStart() {
 	);
 
 	const spinner = createSpinner(`Syncing with database`).start();
+	let syncStart = Date.now();
 	try {
 		await booksStorage.synch();
-		spinner.success({ text: 'Synced with database', mark: '💾' });
+		let syncTime = colorValue((Date.now() - syncStart) / 10, 1500);
+		spinner.success({
+			text: `Synced with database in ${syncTime} ms`,
+			mark: '💾',
+		});
 	} catch (err) {
 		spinner.error({ text: 'Failed to sync with database', mark: '❌' });
 	} finally {
