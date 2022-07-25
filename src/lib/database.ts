@@ -3,8 +3,8 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-const isTestMode = process.env.NODE_ENV === 'test';
-const isRemoteDb = process.env.IS_REMOTE_DB === 'true';
+export const isTestMode = process.env.NODE_ENV === 'test';
+export const isRemoteDb = process.env.IS_REMOTE_DB === 'true';
 export const db = new PrismaClient({
 	datasources: {
 		db: {

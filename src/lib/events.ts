@@ -1,9 +1,21 @@
+import chalk from 'chalk';
 import { prompt } from 'inquirer';
 import { createSpinner } from 'nanospinner';
+import { isRemoteDb, isTestMode } from './database';
 import { booksStorage } from './sessions';
 
 export async function beforeStart() {
-	const spinner = createSpinner('Syncing with database').start();
+	console.log(
+		`Connecting to ${
+			isRemoteDb ? `🌐 ${chalk.magenta('remote')}` : `🧱 ${chalk.cyan('local')}`
+		} database with ${
+			isTestMode
+				? `🧪 ${chalk.yellow(`test`)}`
+				: `🚀 ${chalk.redBright(`production`)}`
+		} mode`,
+	);
+
+	const spinner = createSpinner(`Syncing with database`).start();
 	try {
 		await booksStorage.synch();
 		spinner.success({ text: 'Synced with database', mark: '💾' });
