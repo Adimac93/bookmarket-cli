@@ -4,9 +4,10 @@ import { db } from '.';
 import { subjectConvert } from '../common';
 
 async function main() {
+	const n = 10;
 	const start = Date.now();
-	await generateBooks(200);
-	console.log(`\nCompleted in ${(Date.now() - start) / 1000}s`);
+	await generateBooks(n);
+	console.log(`\nGenerated ${n} books in ${(Date.now() - start) / 1000}s`);
 }
 
 const GRADE_NUMBER = 4;
@@ -43,7 +44,7 @@ const SUFFIXES = [
 ];
 
 async function generateBooks(n: number) {
-	process.stdout.write('Generating books:');
+	process.stdout.write('Generating books:\n');
 	for (let i = 0; i < n; i++) {
 		const gradeNumber = randomInt(1, GRADE_NUMBER);
 		const titleMain = randomChoice(SUBJECTS);
@@ -128,7 +129,7 @@ async function getRandomLastName(isFemale: boolean) {
 function getRandomBookType(): string {
 	const isWithPart = Math.random() < 0.3;
 	return `${
-		isWithPart ? ' część' + randomInt(1, GRADE_NUMBER) + ' ' : ''
+		isWithPart ? ' część ' + randomInt(1, GRADE_NUMBER) + ' ' : ''
 	}${randomChoice(BOOK_TYPES)}`;
 }
 
