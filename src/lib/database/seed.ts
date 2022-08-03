@@ -71,7 +71,7 @@ async function generateBooks(n: number) {
 		const url = 'unknown';
 		const image = 'unknown';
 		const is_advanced = Math.random() < 0.5;
-		const id = create_UUID();
+		const id = getRandomISBN();
 		const book: Book = {
 			id,
 			title,
@@ -133,21 +133,33 @@ function getRandomBookType(): string {
 	}${randomChoice(BOOK_TYPES)}`;
 }
 
-async function fetchJson(url: string) {
-	return await (await fetch(url)).json();
+function getRandomISBN(): string {
+	let prefix = '978';
+	let registrationGroupElement = randomInt(0, 10 - 1);
+	let registrantElement = randomInt(0, 90000 - 1) + 10000;
+	let publicationElement = randomInt(0, 900 - 1) + 100;
+	const isbn =
+		prefix + registrationGroupElement + registrantElement + publicationElement;
+	let checkDigit = 0;
+	for (let i = 1; i <= isbn.length; i++) {
+		let digit = parseInt(isbn[i - 1]);
+		if (i % 2 == 0) {
+			checkDigit += digit * 3;
+		} else {
+			checkDigit += digit;
+		}
+	}
+	let rem = checkDigit % 10;
+	if (rem == 0) {
+		checkDigit = 0;
+	} else {
+		checkDigit = 10 - rem;
+	}
+	return isbn + checkDigit;
 }
 
-function create_UUID() {
-	var dt = new Date().getTime();
-	var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
-		/[xy]/g,
-		function (c) {
-			var r = (dt + Math.random() * 16) % 16 | 0;
-			dt = Math.floor(dt / 16);
-			return (c == 'x' ? r : (r & 0x3) | 0x8).toString(16);
-		},
-	);
-	return uuid;
+async function fetchJson(url: string) {
+	return await (await fetch(url)).json();
 }
 
 function randomChoice<T>(choices: T[]): T {
