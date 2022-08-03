@@ -11,6 +11,9 @@
 		"test": "jest",
 		"build": "tsc"
 	},
+	"prisma": {
+		"seed": "ts-node ./src/lib/database/seed.ts"
+	},
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
