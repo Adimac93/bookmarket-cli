@@ -1,5 +1,6 @@
 import { Grade, Subject } from '@prisma/client';
 import * as fs from 'node:fs';
+import { saveDir } from '../config';
 
 export interface fetchedBook {
 	id: string;
@@ -56,6 +57,7 @@ export class File {
 
 	constructor(filePath: string) {
 		this.filePath = filePath;
+		if (!fs.existsSync(saveDir)) fs.mkdirSync(saveDir);
 	}
 
 	load<T>() {
