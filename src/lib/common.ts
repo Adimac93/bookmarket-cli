@@ -76,3 +76,18 @@ export class File {
 		fs.writeFileSync(this.filePath, JSON.stringify(payload, null, 4), 'utf-8');
 	}
 }
+export class Random {
+	choice<T>(choices: T[]): T {
+		var index = Math.floor(Math.random() * choices.length);
+		return choices[index];
+	}
+
+	int(min: number, max: number): number {
+		return Math.floor(Math.random() * (max - min) + min);
+	}
+
+	float(min: number, max: number, decimals: number): number {
+		const str = (Math.random() * (max - min) + min).toFixed(decimals);
+		return parseFloat(str);
+	}
+}
