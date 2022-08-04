@@ -1,10 +1,12 @@
 import { Book, Grade, Subject } from '@prisma/client';
 import fetch from 'node-fetch';
 import { db } from '.';
-import { subjectConvert } from '../common';
+import { saveDir } from '../../config';
+import { File, Random, subjectConvert } from '../common';
 
+const random = new Random();
 async function main() {
-	const n = 10;
+	const n = 1000;
 	const start = Date.now();
 	await generateBooks(n);
 	console.log(`\nGenerated ${n} books in ${(Date.now() - start) / 1000}s`);
@@ -43,35 +45,116 @@ const SUFFIXES = [
 	'',
 ];
 
+class Source extends File {
+	src: source;
+	constructor(filePath: string) {
+		super(filePath);
+		this.src = super.load<source>() || {
+			male: { firstNames: [], lastNames: [] },
+			female: { firstNames: [], lastNames: [] },
+		};
+	}
+
+	private async fetchJsonMap(sourceUrl: string) {
+		return (await fetchJson(`${sourceUrl}?page=${random.int(1, 500)}`))
+			.data as any[];
+	}
+
+	async generate(n: number) {
+		const baseURL = 'https://api.dane.gov.pl/1.4/resources';
+		const femaleFirstNameSource = `${baseURL}/28103,lista-imion-zenskich-w-rejestrze-pesel-stan-na-31012021-imie-pierwsze/data`;
+		const femaleLastNameSource = `${baseURL}/38771,nazwiska-zenskie-stan-na-2022-01-27/data`;
+		const maleFirstNameSource = `${baseURL}/36411,lista-imion-meskich-w-rejestrze-pesel-stan-na-24012022-imie-pierwsze/data`;
+		const maleLastNameSource = `${baseURL}/38771,nazwiska-zenskie-stan-na-2022-01-27/data`;
+
+		process.stdout.write('Generating authors:\n');
+		for (let i = 0; i < Math.ceil(n); i++) {
+			const isFemale = randomBoolean();
+			if (isFemale) {
+				(await this.fetchJsonMap(femaleFirstNameSource)).forEach((record) =>
+					this.src.female.firstNames.push(record.attributes.col1.val),
+				);
+				(await this.fetchJsonMap(femaleLastNameSource)).forEach((record) =>
+					this.src.female.lastNames.push(record.attributes.col1.val),
+				);
+			} else {
+				(await this.fetchJsonMap(maleFirstNameSource)).forEach((record) =>
+					this.src.male.firstNames.push(record.attributes.col1.val),
+				);
+				(await this.fetchJsonMap(maleLastNameSource)).forEach((record) =>
+					this.src.male.lastNames.push(record.attributes.col1.val),
+				);
+			}
+			process.stdout.write(`\r${progressBar(i, n, 20)}`);
+		}
+	}
+
+	getRandomFullNames(n: number) {
+		const fullNames: string[] = [];
+		for (let i = 0; i < n; i++) {
+			const isFemale = randomBoolean();
+			let fullName: string;
+			if (isFemale) {
+				const firstName = random.choice(this.src.female.firstNames);
+				const lastName = random.choice(this.src.female.lastNames);
+				fullName = `${firstName[0] + firstName.slice(1).toLowerCase()} ${
+					lastName[0] + lastName.slice(1).toLowerCase()
+				}`;
+			} else {
+				const firstName = random.choice(this.src.male.firstNames);
+				const lastName = random.choice(this.src.male.lastNames);
+				fullName = `${firstName[0] + firstName.slice(1).toLowerCase()} ${
+					lastName[0] + lastName.slice(1).toLowerCase()
+				}`;
+			}
+			fullNames.push(fullName);
+		}
+		return fullNames;
+	}
+
+	count(): number {
+		return this.src.female.firstNames.length;
+	}
+
+	save() {
+		super.save(this.src);
+	}
+}
+
 async function generateBooks(n: number) {
-	process.stdout.write('Generating books:\n');
+	const source = new Source(`${saveDir}/seed.json`);
+	if (source.count() < n) {
+		await source.generate(n);
+		source.save();
+	}
+
 	for (let i = 0; i < n; i++) {
-		const gradeNumber = randomInt(1, GRADE_NUMBER);
-		const titleMain = randomChoice(SUBJECTS);
+		const gradeNumber = random.int(1, GRADE_NUMBER);
+		const grade = Object.keys(Grade)[gradeNumber - 1] as Grade;
+
+		const titleMain = random.choice(SUBJECTS);
 		const title = `${
 			titleMain[0].toUpperCase() + titleMain.slice(1)
-		} ${randomChoice(SUFFIXES)} ${getRandomBookType()} ${gradeNumber}`;
+		} ${random.choice(SUFFIXES)} ${getRandomBookType()} ${gradeNumber}`;
 
-		const grade = Object.keys(Grade)[gradeNumber - 1] as Grade;
 		const subject = subjectConvert[
 			titleMain as keyof typeof subjectConvert
 		] as Subject;
-		const authorsNumber = randomInt(1, 4);
-		const authors = [];
-		for (let j = 0; j < authorsNumber; j++) {
-			const isFemale = Math.random() < 0.5;
-			authors.push(
-				`${await getRandomFirstName(isFemale)} ${await getRandomLastName(
-					isFemale,
-				)}`,
-			);
-		}
+
+		const authorsNumber = random.int(1, 4);
+		const authors = source.getRandomFullNames(authorsNumber);
 		const author = authors.join(', ');
-		const price = randomInt(10, 60);
+
+		const price = random.int(10, 60);
+
 		const url = 'unknown';
+
 		const image = 'unknown';
-		const is_advanced = Math.random() < 0.5;
+
+		const is_advanced = randomBoolean();
+
 		const id = getRandomISBN();
+
 		const book: Book = {
 			id,
 			title,
@@ -83,9 +166,9 @@ async function generateBooks(n: number) {
 			is_advanced,
 			url,
 		};
+		console.log(book);
 
-		await db.book.create({ data: book });
-		process.stdout.write(`\r${progressBar(i, n, 20)}`);
+		//await db.book.create({ data: book });
 	}
 }
 main()
@@ -98,46 +181,29 @@ main()
 		process.exit(1);
 	});
 
-async function getRandomFirstName(isFemale: boolean) {
-	let source;
-	if (isFemale) {
-		source =
-			'https://api.dane.gov.pl/1.4/resources/28103,lista-imion-zenskich-w-rejestrze-pesel-stan-na-31012021-imie-pierwsze/data';
-	} else {
-		source =
-			'https://api.dane.gov.pl/1.4/resources/36411,lista-imion-meskich-w-rejestrze-pesel-stan-na-24012022-imie-pierwsze/data';
-	}
-	const json = await fetchJson(`${source}?page=${randomInt(1, 500)}`);
-	const firstName = json.data[randomInt(0, 19)].attributes.col1.val as string;
-	return firstName[0].concat(firstName.slice(1).toLowerCase());
-}
+type nameParts = { firstNames: string[]; lastNames: string[] };
+type source = {
+	male: nameParts;
+	female: nameParts;
+};
 
-async function getRandomLastName(isFemale: boolean) {
-	let source;
-	if (isFemale) {
-		source =
-			'https://api.dane.gov.pl/1.4/resources/38771,nazwiska-zenskie-stan-na-2022-01-27/data';
-	} else {
-		source =
-			'https://api.dane.gov.pl/1.4/resources/33046,nazwiska-meskie-stan-na-2021-02-01/data';
-	}
-	const json = await fetchJson(`${source}?page=${randomInt(1, 500)}`);
-	const lastName = json.data[randomInt(0, 19)].attributes.col1.val as string;
-	return lastName[0].concat(lastName.slice(1).toLowerCase());
+function randomBoolean(prob?: number): boolean {
+	if (prob != undefined && prob > 0 && prob < 1) return Math.random() < prob;
+	return Math.random() < 0.5;
 }
 
 function getRandomBookType(): string {
-	const isWithPart = Math.random() < 0.3;
+	const isWithPart = randomBoolean(0.3);
 	return `${
-		isWithPart ? ' część ' + randomInt(1, GRADE_NUMBER) + ' ' : ''
-	}${randomChoice(BOOK_TYPES)}`;
+		isWithPart ? ' część ' + random.int(1, GRADE_NUMBER) + ' ' : ''
+	}${random.choice(BOOK_TYPES)}`;
 }
 
 function getRandomISBN(): string {
 	let prefix = '978';
-	let registrationGroupElement = randomInt(0, 10 - 1);
-	let registrantElement = randomInt(0, 90000 - 1) + 10000;
-	let publicationElement = randomInt(0, 900 - 1) + 100;
+	let registrationGroupElement = random.int(0, 10 - 1);
+	let registrantElement = random.int(0, 90000 - 1) + 10000;
+	let publicationElement = random.int(0, 900 - 1) + 100;
 	const isbn =
 		prefix + registrationGroupElement + registrantElement + publicationElement;
 	let checkDigit = 0;
@@ -160,20 +226,6 @@ function getRandomISBN(): string {
 
 async function fetchJson(url: string) {
 	return await (await fetch(url)).json();
-}
-
-function randomChoice<T>(choices: T[]): T {
-	var index = Math.floor(Math.random() * choices.length);
-	return choices[index];
-}
-
-function randomInt(min: number, max: number): number {
-	return Math.floor(Math.random() * (max - min) + min);
-}
-
-function randomFloat(min: number, max: number, decimals: number): number {
-	const str = (Math.random() * (max - min) + min).toFixed(decimals);
-	return parseFloat(str);
 }
 
 function progressBar(value: number, maxValue: number, size: number): string {
