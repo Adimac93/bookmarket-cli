@@ -68,25 +68,32 @@ class Source extends File {
 		const maleLastNameSource = `${baseURL}/38771,nazwiska-zenskie-stan-na-2022-01-27/data`;
 
 		process.stdout.write('Generating authors:\n');
-		for (let i = 0; i < Math.ceil(n); i++) {
-			const isFemale = randomBoolean();
-			if (isFemale) {
-				(await this.fetchJsonMap(femaleFirstNameSource)).forEach((record) =>
-					this.src.female.firstNames.push(record.attributes.col1.val),
-				);
-				(await this.fetchJsonMap(femaleLastNameSource)).forEach((record) =>
-					this.src.female.lastNames.push(record.attributes.col1.val),
-				);
-			} else {
-				(await this.fetchJsonMap(maleFirstNameSource)).forEach((record) =>
-					this.src.male.firstNames.push(record.attributes.col1.val),
-				);
-				(await this.fetchJsonMap(maleLastNameSource)).forEach((record) =>
-					this.src.male.lastNames.push(record.attributes.col1.val),
-				);
-			}
-			process.stdout.write(`\r${progressBar(i, n, 20)}`);
-		}
+		await Promise.all(
+			Array.from({ length: Math.ceil(n / 20) })
+				.map(() => [
+					this.fetchJsonMap(femaleFirstNameSource).then((records) =>
+						records.forEach((record) =>
+							this.src.female.firstNames.push(record.attributes.col1.val),
+						),
+					),
+					this.fetchJsonMap(femaleLastNameSource).then((records) =>
+						records.forEach((record) =>
+							this.src.female.lastNames.push(record.attributes.col1.val),
+						),
+					),
+					this.fetchJsonMap(maleFirstNameSource).then((records) =>
+						records.forEach((record) =>
+							this.src.male.firstNames.push(record.attributes.col1.val),
+						),
+					),
+					this.fetchJsonMap(maleLastNameSource).then((records) =>
+						records.forEach((record) =>
+							this.src.male.lastNames.push(record.attributes.col1.val),
+						),
+					),
+				])
+				.flat(),
+		);
 	}
 
 	getRandomFullNames(n: number) {
@@ -123,8 +130,8 @@ class Source extends File {
 
 async function generateBooks(n: number) {
 	const source = new Source(`${saveDir}/seed.json`);
-	if (source.count() < n) {
-		await source.generate(n);
+	if (source.count() < n / 2) {
+		await source.generate(n / 2);
 		source.save();
 	}
 
@@ -166,9 +173,7 @@ async function generateBooks(n: number) {
 			is_advanced,
 			url,
 		};
-		console.log(book);
-
-		//await db.book.create({ data: book });
+		await db.book.create({ data: book });
 	}
 }
 main()
@@ -226,18 +231,4 @@ function getRandomISBN(): string {
 
 async function fetchJson(url: string) {
 	return await (await fetch(url)).json();
-}
-
-function progressBar(value: number, maxValue: number, size: number): string {
-	const percentage = value / maxValue;
-	const progress = Math.round(size * percentage);
-	const emptyProgress = size - progress;
-
-	const progressText = '▇'.repeat(progress);
-	const emptyProgressText = '—'.repeat(emptyProgress);
-	const percentageText = Math.round(percentage * 100) + '%';
-
-	const bar =
-		'[' + progressText + emptyProgressText + ']' + percentageText + '';
-	return bar;
 }
