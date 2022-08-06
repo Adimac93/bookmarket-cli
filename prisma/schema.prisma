@@ -8,57 +8,84 @@ datasource db {
 }
 
 model Book {
-  id                String              @id
-  title             String
-  author            String
-  image             String
-  grade             Grade
-  subject           Subject
-  price             Int
-  is_advanced       Boolean
-  url               String
-  BookWithCondition BookWithCondition[]
-}
-
-model BookCopy {
-  id                String            @id
-  owner_id          String
-  status            String
-  condition         Condition
-  book_id           String
-  BookWithCondition BookWithCondition @relation(fields: [book_id, condition], references: [book_id, condition])
-  User              User              @relation(fields: [owner_id], references: [id])
-}
-
-model BookInCart {
-  user_id           String
-  book_id           String
-  condition         Condition
-  BookWithCondition BookWithCondition @relation(fields: [book_id, condition], references: [book_id, condition])
-  User              User              @relation(fields: [user_id], references: [id])
-
-  @@unique([book_id, user_id])
-}
-
-model BookWithCondition {
-  book_id    String
-  condition  Condition
-  Book       Book         @relation(fields: [book_id], references: [id])
-  BookCopy   BookCopy[]
-  BookInCart BookInCart[]
-
-  @@id([book_id, condition])
+  title      String
+  author     String
+  image      String
+  grade      Grade
+  subject    Subject
+  price      Int
+  url        String
+  isAdvanced Boolean
+  created    DateTime    @default(now())
+  isbn       String      @id
+  updated    DateTime
+  OrderBook  OrderBook[]
+  UserBook   UserBook[]
 }
 
 model User {
-  id           String       @id
-  name         String
-  discord_id   String?      @unique
-  phone_number String?      @unique
-  facebook_id  String?      @unique
-  google_id    String?      @unique
-  BookCopy     BookCopy[]
-  BookInCart   BookInCart[]
+  id          String  @id
+  name        String?
+  discordId   String? @unique
+  facebookId  String? @unique
+  googleId    String? @unique
+  phoneNumber String? @unique
+  Base        Base    @relation(fields: [id], references: [id])
+}
+
+model Base {
+  id                         String     @id
+  created                    DateTime   @default(now())
+  updated                    DateTime
+  Order_BaseToOrder_buyerId  Order[]    @relation("BaseToOrder_buyerId")
+  Order_BaseToOrder_sellerId Order[]    @relation("BaseToOrder_sellerId")
+  School                     School?
+  User                       User?
+  UserBook                   UserBook[]
+}
+
+model Order {
+  id                        String      @id
+  status                    OrderStatus
+  sellerId                  String
+  buyerId                   String
+  created                   DateTime    @default(now())
+  updated                   DateTime
+  Base_BaseToOrder_buyerId  Base        @relation("BaseToOrder_buyerId", fields: [buyerId], references: [id])
+  Base_BaseToOrder_sellerId Base        @relation("BaseToOrder_sellerId", fields: [sellerId], references: [id])
+  OrderBook                 OrderBook[]
+}
+
+model OrderBook {
+  condition Condition
+  count     Int
+  isbn      String
+  orderId   String
+  Book      Book      @relation(fields: [isbn], references: [isbn])
+  Order     Order     @relation(fields: [orderId], references: [id])
+
+  @@unique([condition, isbn, orderId])
+}
+
+model School {
+  id     String @id
+  name   String
+  abbr   String
+  city   String
+  region String
+  schema Json
+  Base   Base   @relation(fields: [id], references: [id])
+}
+
+model UserBook {
+  condition Condition
+  count     Int
+  isbn      String
+  ownerId   String
+  Book      Book      @relation(fields: [isbn], references: [isbn])
+  Base      Base      @relation(fields: [ownerId], references: [id])
+
+  @@unique([condition, isbn, ownerId])
 }
 
 enum Condition {
@@ -90,4 +117,9 @@ enum Subject {
   COMPUTER_SCIENCE
   ENTREPRENEURSHIP
   EDUCATION_FOR_SAFETY
+}
+
+enum OrderStatus {
+  PENDING
+  DELIVERED
 }
