@@ -148,9 +148,12 @@ async function generateBooks(n: number) {
 		const grade = Object.keys(Grade)[gradeNumber - 1] as Grade;
 
 		const titleMain = random.choice(SUBJECTS);
-		const title = `${
-			titleMain[0].toUpperCase() + titleMain.slice(1)
-		} ${random.choice(SUFFIXES)} ${getRandomBookType()} ${gradeNumber}`;
+		const title = [
+			titleMain[0].toUpperCase() + titleMain.slice(1),
+			random.choice(SUFFIXES),
+			getRandomBookType(),
+			gradeNumber,
+		].join(' ');
 
 		const subject = subjectConvert[
 			titleMain as keyof typeof subjectConvert
@@ -209,7 +212,7 @@ function randomBoolean(prob?: number): boolean {
 function getRandomBookType(): string {
 	const isWithPart = randomBoolean(0.3);
 	return `${
-		isWithPart ? ' część ' + random.int(1, GRADE_NUMBER) + ' ' : ''
+		isWithPart ? 'część ' + random.int(1, GRADE_NUMBER) + ' ' : ''
 	}${random.choice(BOOK_TYPES)}`;
 }
 
