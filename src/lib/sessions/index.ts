@@ -18,7 +18,7 @@ export class Books extends File {
 		this.books = super.load() || [];
 		this.registered = new Set(
 			this.books.map((book) => {
-				return book.id;
+				return book.isbn;
 			}),
 		);
 	}
@@ -41,11 +41,11 @@ export class Books extends File {
 	update(other: Book[] | Book, booksSchema?: BooksSchema) {
 		if (Array.isArray(other)) {
 			other.forEach((book) => {
-				if (!this.registered.has(book.id)) {
+				if (!this.registered.has(book.isbn)) {
 					if (booksSchema) {
 						if (booksSchema.schema[book.grade].includes(book.subject)) {
 							this.books.push(book);
-							this.registered.add(book.id);
+							this.registered.add(book.isbn);
 						} else {
 							console.log(
 								`Could not include book ${book.title} because its subject isn't in grade schema`,
@@ -53,22 +53,22 @@ export class Books extends File {
 						}
 					} else {
 						this.books.push(book);
-						this.registered.add(book.id);
+						this.registered.add(book.isbn);
 					}
 				}
 			});
 			return;
 		}
-		if (!this.registered.has(other.id)) {
+		if (!this.registered.has(other.isbn)) {
 			this.books.push(other);
-			this.registered.add(other.id);
+			this.registered.add(other.isbn);
 		}
 	}
 
 	save() {
 		let registered = this.registered;
 		let books = this.books.reverse().filter((book) => {
-			return registered.delete(book.id);
+			return registered.delete(book.isbn);
 		});
 		super.save(books);
 	}
@@ -82,7 +82,7 @@ export class Books extends File {
 
 		dbBooks.forEach((book) => {
 			this.books.push(book);
-			this.registered.add(book.id);
+			this.registered.add(book.isbn);
 		});
 
 		super.save(this.books);

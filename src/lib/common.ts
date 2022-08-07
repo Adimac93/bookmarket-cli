@@ -3,14 +3,14 @@ import * as fs from 'node:fs';
 import { saveDir } from '../config';
 
 export interface fetchedBook {
-	id: string;
+	isbn: string;
 	title: string;
 	author: string | null;
 	price: number;
 	image: string;
 	grade: Grade | undefined;
 	subject: Subject | undefined;
-	is_advanced: boolean | undefined;
+	isAdvanced: boolean | undefined;
 	url: string;
 }
 export const gradeConvert = {

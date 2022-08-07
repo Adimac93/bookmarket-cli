@@ -66,23 +66,26 @@ async function editBook(book: fetchedBook): Promise<Book> {
 			when: () => !book.subject,
 		},
 		{
-			name: 'is_advanced',
+			name: 'isAdvanced',
 			message: '🚩 Is advanced',
 			type: 'confirm',
-			when: () => book.is_advanced == undefined,
+			when: () => book.isAdvanced == undefined,
 		},
 	]);
+	const date = new Date();
 	return {
 		title: fill.title || book.title,
 		author: fill.author || book.author,
 		grade: fill.grade || book.grade,
 		subject: fill.subject || book.subject,
-		is_advanced:
-			fill.is_advanced != undefined ? fill.is_advanced : book.is_advanced,
+		isAdvanced:
+			fill.isAdvanced != undefined ? fill.isAdvanced : book.isAdvanced,
 		price: book.price,
 		image: book.image,
-		id: book.id,
+		isbn: book.isbn,
 		url: book.url,
+		created: date,
+		updated: date,
 	};
 }
 

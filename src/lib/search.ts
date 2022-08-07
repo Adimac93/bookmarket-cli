@@ -148,7 +148,7 @@ export async function promptFetchBook() {
 
 	try {
 		const book = await fetchBook(options.url);
-		if (!booksStorage.registered.has(book.id)) {
+		if (!booksStorage.registered.has(book.isbn)) {
 			booksStorage.update(await promptEditBook(book));
 			await booksStorage.save();
 			console.log('Book saved');

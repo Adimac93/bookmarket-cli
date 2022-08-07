@@ -48,8 +48,8 @@ export function displayBook(
 		`Subject     : ${format(book.subject, chalk.rgb(73, 148, 245))}`,
 		`Price       : ${colorValue(book.price, 70)}`,
 		`Is advanced : ${format(
-			book.is_advanced,
-			book.is_advanced ? chalk.green : chalk.yellow,
+			book.isAdvanced,
+			book.isAdvanced ? chalk.green : chalk.yellow,
 		)}`,
 	];
 	return `${prefix ?? ''}\n${fields.join('\n')}\n${suffix ?? ''}`;

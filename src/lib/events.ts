@@ -31,7 +31,7 @@ export async function beforeStart() {
 		if (booksStorage.registered.size != booksStorage.books.length) {
 			booksStorage.save();
 			console.log(
-				'🚧 Muliple locally saved books containing the same id! Using latest ones',
+				'🚧 Muliple locally saved books containing the same isbn! Using latest ones',
 			);
 		}
 	}

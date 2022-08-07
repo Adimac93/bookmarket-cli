@@ -10,103 +10,119 @@ describe('Books state session storage', () => {
 	beforeAll(async () => {
 		if (fs.existsSync(savePath)) fs.unlinkSync(savePath);
 		booksStorage = new Books(savePath);
+		const date = new Date();
 		await db.book.deleteMany();
 		await db.book.createMany({
 			data: [
 				{
-					id: '1',
+					isbn: '1',
 					title: 'Biology 2',
 					author: 'unknown',
 					price: 20,
 					image: 'none',
 					grade: 'SECOND',
 					subject: 'BIOLOGY',
-					is_advanced: true,
+					isAdvanced: true,
 					url: 'none',
+					updated: date,
 				},
 				{
-					id: '6',
+					isbn: '6',
 					title: 'Biology 4',
 					author: 'unknown',
 					price: 40,
 					image: 'none',
 					grade: 'FOURTH',
 					subject: 'BIOLOGY',
-					is_advanced: true,
+					isAdvanced: true,
 					url: 'none',
+					updated: date,
 				},
 			],
 		});
 	});
 
 	it('add books', () => {
+		const date = new Date();
 		const book: Book = {
-			id: '1',
+			isbn: '1',
 			title: 'Biology 2',
 			author: 'unknown',
 			price: 10,
 			image: 'none',
 			grade: 'SECOND',
 			subject: 'BIOLOGY',
-			is_advanced: false,
+			isAdvanced: false,
 			url: 'none',
+			updated: date,
+			created: date,
 		};
 		const books: Book[] = [
 			{
-				id: '2',
+				isbn: '2',
 				title: 'Biology 2',
 				author: 'unknown',
 				price: 10,
 				image: 'none',
 				grade: 'SECOND',
 				subject: 'BIOLOGY',
-				is_advanced: false,
+				isAdvanced: false,
 				url: 'none',
+				updated: date,
+				created: date,
 			},
 			{
-				id: '3',
+				isbn: '3',
 				title: 'Biology 3',
 				author: 'unknown',
 				price: 7,
 				image: 'none',
 				grade: 'THIRD',
 				subject: 'BIOLOGY',
-				is_advanced: true,
+				isAdvanced: true,
 				url: 'none',
+				updated: date,
+				created: date,
 			},
 			{
-				id: '4',
+				isbn: '4',
 				title: 'Math 3',
 				author: 'unknown',
 				price: 20,
 				image: 'none',
 				grade: 'THIRD',
 				subject: 'MATH',
-				is_advanced: true,
+				isAdvanced: true,
 				url: 'none',
+				updated: date,
+				created: date,
 			},
 			{
-				id: '5',
+				isbn: '5',
 				title: 'History 1',
 				author: 'unknown',
 				price: 25,
 				image: 'none',
 				grade: 'FIRST',
 				subject: 'HISTORY',
-				is_advanced: true,
+				isAdvanced: true,
 				url: 'none',
+				updated: date,
+				created: date,
 			},
-			// doubled id - shouldn't be added
+			// doubled isbn - shouldn't be added
 			{
-				id: '5',
+				isbn: '5',
 				title: 'History 1',
 				author: 'unknown',
 				price: 25,
 				image: 'none',
 				grade: 'FIRST',
 				subject: 'HISTORY',
-				is_advanced: true,
+				isAdvanced: true,
 				url: 'none',
+				updated: date,
+				created: date,
 			},
 		];
 		booksStorage.update(book);

@@ -13,13 +13,13 @@ export async function fetchBook(url: string): Promise<fetchedBook> {
 	const price = parseInt($('.our-price strong #updateable_price-zl').text());
 
 	let image: string;
-	let id: string;
-	const coverMatch = /(?<image>\/\w+\/(?<id>\d+)\..*)/.exec(
+	let isbn: string;
+	const coverMatch = /(?<image>\/\w+\/(?<isbn>\d+)\..*)/.exec(
 		$('div .col-left4 .full-col img').attr('src') ?? '',
 	);
 	if (coverMatch?.groups) {
 		image = coverMatch.groups.image;
-		id = coverMatch.groups.id;
+		isbn = coverMatch.groups.isbn;
 	} else {
 		throw new Error('Missing cover');
 	}
@@ -45,10 +45,10 @@ export async function fetchBook(url: string): Promise<fetchedBook> {
 		subject = subjectConvert[path[1] as keyof typeof subjectConvert] as Subject;
 	}
 
-	let is_advanced: boolean | undefined;
-	is_advanced = undefined;
+	let isAdvanced: boolean | undefined;
+	isAdvanced = undefined;
 
-	return { title, author, grade, subject, is_advanced, image, id, price, url };
+	return { title, author, grade, subject, isAdvanced, image, isbn, price, url };
 }
 
 export async function fetchPage(url: string) {

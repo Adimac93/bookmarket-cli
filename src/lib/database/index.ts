@@ -34,7 +34,7 @@ datasource db {
 export async function uploadBook(book: Book, force?: boolean) {
 	try {
 		await db.book.upsert({
-			where: { id: book.id },
+			where: { isbn: book.isbn },
 			create: { ...book },
 			update: force ? { ...book } : { price: book.price },
 		});
@@ -48,6 +48,6 @@ export const getGradeBooks = async (grade: Grade) =>
 
 export const diff = async (registeredBooks: Set<string>) => {
 	return await db.book.findMany({
-		where: { id: { notIn: Array.from(registeredBooks) } },
+		where: { isbn: { notIn: Array.from(registeredBooks) } },
 	});
 };

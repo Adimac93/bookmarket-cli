@@ -158,20 +158,24 @@ async function generateBooks(n: number) {
 
 		const image = 'unknown';
 
-		const is_advanced = randomBoolean();
+		const isAdvanced = randomBoolean();
 
-		const id = getRandomISBN();
+		const isbn = getRandomISBN();
 
+		const created = randomDate(new Date(2000, 1, 1), new Date());
+		const updated = randomDate(created, new Date());
 		const book: Book = {
-			id,
+			isbn,
 			title,
 			author,
 			price,
 			image,
 			grade,
 			subject,
-			is_advanced,
+			isAdvanced,
 			url,
+			created,
+			updated,
 		};
 		await db.book.create({ data: book });
 	}
@@ -191,6 +195,12 @@ type source = {
 	male: nameParts;
 	female: nameParts;
 };
+
+function randomDate(start: Date, end: Date) {
+	return new Date(
+		start.getTime() + Math.random() * (end.getTime() - start.getTime()),
+	);
+}
 
 function randomBoolean(prob?: number): boolean {
 	if (prob != undefined && prob > 0 && prob < 1) return Math.random() < prob;
