@@ -5,8 +5,16 @@ import { saveDir } from '../../config';
 import { File, Random, subjectConvert } from '../common';
 
 const random = new Random();
-async function main() {
-	const n = 1000;
+export async function seedDatabase() {
+	const booksCount = await (await db.book.findMany({})).length;
+	const expectedNumber = 1000;
+	const n = expectedNumber - booksCount;
+	if (n <= 0) {
+		console.log(
+			`Database is already seeded with ${expectedNumber} or more books`,
+		);
+		return;
+	}
 	const start = Date.now();
 	await generateBooks(n);
 	console.log(`\nGenerated ${n} books in ${(Date.now() - start) / 1000}s`);
@@ -180,15 +188,6 @@ async function generateBooks(n: number) {
 		await db.book.create({ data: book });
 	}
 }
-main()
-	.then(async () => {
-		await db.$disconnect();
-	})
-	.catch(async (e) => {
-		console.error(e);
-		await db.$disconnect();
-		process.exit(1);
-	});
 
 type nameParts = { firstNames: string[]; lastNames: string[] };
 type source = {
