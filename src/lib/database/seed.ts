@@ -1,23 +1,65 @@
 import { Book, Grade, Subject } from '@prisma/client';
+import chalk from 'chalk';
+import { prompt } from 'inquirer';
 import fetch from 'node-fetch';
 import { db } from '.';
 import { saveDir } from '../../config';
 import { File, Random, subjectConvert } from '../common';
 
 const random = new Random();
-export async function seedDatabase() {
+export async function seedDatabase(expectedNumber: number) {
 	const booksCount = await (await db.book.findMany({})).length;
-	const expectedNumber = 1000;
 	const n = expectedNumber - booksCount;
 	if (n <= 0) {
-		console.log(
-			`Database is already seeded with ${expectedNumber} or more books`,
-		);
+		console.log(`Database is already seeded with ${booksCount} books`);
 		return;
 	}
 	const start = Date.now();
 	await generateBooks(n);
-	console.log(`\nGenerated ${n} books in ${(Date.now() - start) / 1000}s`);
+	console.log(
+		`\nGenerated ${chalk.magentaBright(n)} books in ${
+			(Date.now() - start) / 1000
+		}s`,
+	);
+}
+
+export async function promptSeedDatabase() {
+	const options = await prompt([
+		{
+			name: 'mode',
+			message: 'Mode',
+			choices: [
+				{ name: '📨 add', value: 'add' },
+				{ name: '📩 fill', value: 'fill' },
+			],
+			type: 'list',
+		},
+		{
+			name: 'recordNumber',
+			message: 'Records',
+			type: 'input',
+			validate: (number: string) =>
+				Number.isInteger(Number(number.trim())) || 'Enter integer value',
+		},
+	]);
+	const start = Date.now();
+	let n = Number((options.recordNumber as string).trim());
+	if (options.mode == 'fill') {
+		const booksCount = await (await db.book.findMany({})).length;
+		n -= booksCount;
+		if (n <= 0) {
+			console.log(
+				`The set fill threshold has already been reached with ${booksCount} books`,
+			);
+			return;
+		}
+	}
+	await generateBooks(n);
+	console.log(
+		`Generated ${chalk.magentaBright(n)} books in ${
+			(Date.now() - start) / 1000
+		}s`,
+	);
 }
 
 const GRADE_NUMBER = 4;

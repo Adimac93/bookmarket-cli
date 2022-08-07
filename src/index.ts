@@ -5,6 +5,7 @@ import { prompt } from 'inquirer';
 import { promptViewBooks } from './lib/view';
 import { promptExit, beforeStart } from './lib/events';
 import * as gradient from 'gradient-string';
+import { promptSeedDatabase } from './lib/database/seed';
 
 async function main() {
 	console.log(gradient.passion(logo));
@@ -19,6 +20,7 @@ async function main() {
 				{ name: '🚚 book loader', value: 'books' },
 				{ name: '📡 book browser', value: 'search' },
 				{ name: '📚 view books', value: 'view' },
+				{ name: '🌱 seed database', value: 'seed' },
 				{ name: '🧰 exit and save', value: 'exit' },
 			],
 			type: 'list',
@@ -31,6 +33,8 @@ async function main() {
 			await promptSearchBooks();
 		} else if (options.menu == 'view') {
 			await promptViewBooks();
+		} else if (options.menu == 'seed') {
+			await promptSeedDatabase();
 		} else if (options.menu == 'exit') {
 			await promptExit();
 			break;
